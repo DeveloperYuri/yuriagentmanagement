@@ -28,7 +28,7 @@ export default defineConfig({
         // --- TAMBAHKAN INI AGAR AUTO-UPDATE ---
         watch: {
             usePolling: true, 
-            // interval: 100,
+            interval: 100,
         },
     },
 });
