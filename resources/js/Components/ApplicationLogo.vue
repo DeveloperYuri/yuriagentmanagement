@@ -1,5 +1,5 @@
 <template>
-    <div class="text-3xl font-bold text-gray-800 whitespace-nowrap text-center">
+    <div class="text-lg font-bold text-gray-800 whitespace-nowrap">
         Yuri Agent Management
     </div>
 </template>
