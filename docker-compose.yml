@@ -1,0 +1,53 @@
+services:
+  # App (Laravel + Inertia)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yuri_app
+    restart: unless-stopped
+    ports:
+      - "5173:5173" # Untuk Vite (Inertia/Vue)
+    volumes:
+      - .:/var/www
+    networks:
+      - yuri_network
+
+  # Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: yuri_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: yuri_agent_db
+      POSTGRES_USER: yuri_user
+      POSTGRES_PASSWORD: yuri_password
+    ports:
+      - "5432:5432" # TAMBAHKAN INI: Supaya kamu bisa cek database pakai DBeaver/TablePlus dari Windows
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - yuri_network
+
+  # Web Server (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: yuri_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./nginx:/etc/nginx/conf.d 
+    networks:
+      - yuri_network
+    depends_on:
+      - app # Tips: Nginx baru nyala setelah app siap
+      - db
+
+networks:
+  yuri_network:
+    driver: bridge
+
+volumes:
+  postgres_data: # Data database aman di sini meskipun container dihapus
