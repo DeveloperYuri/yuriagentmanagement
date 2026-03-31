@@ -32,7 +32,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    // INI KUNCINYA: Kita panggil fungsi Spatie buat ambil nama role-nya
+                    'roles' => $request->user()->getRoleNames(),
+                    // Opsional: kalau butuh permission juga tinggal tambah ini
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name'),
+                ] : null,
             ],
         ];
     }

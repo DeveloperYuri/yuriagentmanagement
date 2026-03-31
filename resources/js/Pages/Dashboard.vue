@@ -4,6 +4,7 @@ import { Link } from "@inertiajs/vue3";
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
+import { Head } from "@inertiajs/vue3";
 import {
     HomeIcon,
     UsersIcon,
@@ -23,6 +24,8 @@ const toggleSidebar = () => {
 </script>
 
 <template>
+    <Head title="Dashboard" />
+
     <div class="min-h-screen bg-gray-100 flex">
         <aside
             :class="[
@@ -41,8 +44,12 @@ const toggleSidebar = () => {
                     class="flex items-center gap-3"
                 >
                     <ApplicationLogo
-                        class="h-8 w-8 fill-current text-indigo-400 shrink-0"
+                        :show-text="isSidebarOpen"
+                        class="h-8 fill-current text-indigo-400 shrink-0"
                     />
+                    <!-- <ApplicationLogo
+                        class="h-8 w-8 fill-current text-indigo-400 shrink-0"
+                    /> -->
                     <!-- <span
                         v-show="isSidebarOpen"
                         class="font-bold text-xl text-white tracking-wider uppercase"
@@ -75,13 +82,23 @@ const toggleSidebar = () => {
                     <p
                         class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold italic"
                     >
-                        Administrator
+                        {{ $page.props.auth.user?.roles?.[0] || "No Role" }}
                     </p>
+                    <!-- <p
+                        class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold italic"
+                    >
+                        Administrator
+                    </p> -->
                 </div>
             </div>
 
             <nav class="mt-4 px-2 space-y-1">
                 <Link
+                    v-if="
+                        $page.props.auth.user?.roles?.some((role) =>
+                            ['admin', 'manager'].includes(role),
+                        )
+                    "
                     :href="route('dashboard')"
                     :class="
                         route().current('dashboard')
@@ -224,32 +241,3 @@ aside {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
-
-<!-- <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
-</script>
-
-<template>
-    <Head title="Dashboard" />
-
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Dashboard
-            </h2>
-        </template>
-
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    
-                </div>
-            </div>
-        </div>
-    </AuthenticatedLayout>
-</template> -->
