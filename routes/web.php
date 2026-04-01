@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AgentReportController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +49,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 4. Proses Hapus (Opsional buat nanti)
     Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
+
+    Route::get('/reports', [AgentReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports', [AgentReportController::class, 'store'])->name('reports.store');
+    Route::get('/reports/{report}/download', [AgentReportController::class, 'download'])->name('reports.download');
+    Route::put('/reports/{report}', [AgentReportController::class, 'update'])->name('reports.update');
+    Route::delete('/reports/{report}', [AgentReportController::class, 'destroy'])->name('reports.destroy');
 });
 
 require __DIR__ . '/auth.php';

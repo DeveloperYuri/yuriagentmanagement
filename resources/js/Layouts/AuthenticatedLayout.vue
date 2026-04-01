@@ -45,17 +45,8 @@ const toggleSidebar = () => {
                 >
                     <ApplicationLogo
                         :show-text="isSidebarOpen"
-                        class="h-8 fill-current text-indigo-400 shrink-0"
+                        class="h-8 fill-current text-blue-400 shrink-0" 
                     />
-                    <!-- <ApplicationLogo
-                        class="h-8 w-8 fill-current text-indigo-400 shrink-0"
-                    /> -->
-                    <!-- <span
-                        v-show="isSidebarOpen"
-                        class="font-bold text-xl text-white tracking-wider uppercase"
-                        >Yuri
-                        <span class="font-light text-gray-400">ERP</span></span
-                    > -->
                 </Link>
             </div>
 
@@ -64,7 +55,7 @@ const toggleSidebar = () => {
             >
                 <div class="shrink-0 relative">
                     <img
-                        :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=6366f1&color=fff`"
+                        :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=3b82f6&color=fff`"
                         class="h-10 w-10 rounded-full border-2 border-gray-600 shadow-sm"
                         alt="User"
                     />
@@ -84,11 +75,6 @@ const toggleSidebar = () => {
                     >
                         {{ $page.props.auth.user?.roles?.[0] || "No Role" }}
                     </p>
-                    <!-- <p
-                        class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold italic"
-                    >
-                        Administrator
-                    </p> -->
                 </div>
             </div>
 
@@ -102,7 +88,7 @@ const toggleSidebar = () => {
                     :href="route('dashboard')"
                     :class="
                         route().current('dashboard')
-                            ? 'bg-indigo-600 text-white shadow-lg'
+                            ? 'bg-blue-600 text-white shadow-lg' 
                             : 'hover:bg-gray-700 hover:text-white'
                     "
                     class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
@@ -117,7 +103,7 @@ const toggleSidebar = () => {
                     :href="route('agents.index')"
                     :class="
                         $page.component === 'Agents/Index'
-                            ? 'bg-gray-700 text-white shadow-sm'
+                            ? 'bg-blue-600 text-white shadow-sm'
                             : 'hover:bg-gray-700 hover:text-white'
                     "
                     class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
@@ -129,8 +115,13 @@ const toggleSidebar = () => {
                 </Link>
 
                 <Link
-                    href="#"
-                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
+                    :href="route('reports.index')"
+                    :class="
+                        $page.component === 'Reports/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
                 >
                     <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
                     <span v-show="isSidebarOpen" class="text-sm font-medium"
@@ -158,70 +149,6 @@ const toggleSidebar = () => {
                     >
                 </Link>
             </nav>
-
-            <!-- <nav class="mt-4 px-2 space-y-1">
-                <Link
-                    v-if="
-                        $page.props.auth.user?.roles?.some((role) =>
-                            ['admin', 'manager'].includes(role),
-                        )
-                    "
-                    :href="route('dashboard')"
-                    :class="
-                        route().current('dashboard')
-                            ? 'bg-indigo-600 text-white shadow-lg'
-                            : 'hover:bg-gray-700 hover:text-white'
-                    "
-                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
-                >
-                    <HomeIcon class="h-6 w-6 shrink-0" />
-                    <span v-show="isSidebarOpen" class="text-sm font-medium"
-                        >Dashboard</span
-                    >
-                </Link>
-
-                <Link
-                    :href="route('agents.index')"
-                    :class="{
-                        'bg-gray-700 text-white':
-                            $page.component === 'Agents/Index',
-                    }"
-                    class="group flex items-center ..."
-                >
-                    <UsersIcon class="h-6 w-6" />
-                    <span v-show="isSidebarOpen">Daftar Agents</span>
-                </Link>
-
-                <Link
-                    href="#"
-                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
-                >
-                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
-                    <span v-show="isSidebarOpen" class="text-sm font-medium"
-                        >Upload Laporan Excel</span
-                    >
-                </Link>
-
-                <div class="pt-4 pb-2">
-                    <p
-                        v-show="isSidebarOpen"
-                        class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2"
-                    >
-                        Sistem
-                    </p>
-                    <hr class="border-gray-700 mx-2" v-show="!isSidebarOpen" />
-                </div>
-
-                <Link
-                    href="#"
-                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
-                >
-                    <Cog6ToothIcon class="h-6 w-6 shrink-0" />
-                    <span v-show="isSidebarOpen" class="text-sm font-medium"
-                        >Pengaturan</span
-                    >
-                </Link>
-            </nav> -->
         </aside>
 
         <div
@@ -237,7 +164,7 @@ const toggleSidebar = () => {
                 <div class="flex items-center gap-4">
                     <button
                         @click="toggleSidebar"
-                        class="hidden lg:block p-1 text-gray-500 hover:text-indigo-600 transition"
+                        class="hidden lg:block p-1 text-gray-500 hover:text-blue-600 transition"
                     >
                         <Bars3Icon class="h-6 w-6" />
                     </button>
@@ -259,12 +186,12 @@ const toggleSidebar = () => {
                     <Dropdown align="right" width="48">
                         <template #trigger>
                             <button
-                                class="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition"
+                                class="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-blue-600 transition"
                             >
                                 {{ $page.props.auth.user.name }}
                                 <img
-                                    :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=f3f4f6&color=333`"
-                                    class="h-8 w-8 rounded-full border border-gray-200"
+                                    :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=eff6ff&color=2563eb`"
+                                    class="h-8 w-8 rounded-full border border-blue-100"
                                 />
                             </button>
                         </template>
@@ -302,16 +229,9 @@ const toggleSidebar = () => {
 aside {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Tambahan buat jaga-jaga kalau icon masih bandel */
+/* Memastikan ukuran icon tetap konsisten */
 aside svg {
     width: 1.5rem !important;
     height: 1.5rem !important;
 }
 </style>
-
-<!-- <style scoped>
-/* Transisi halus untuk sidebar */
-aside {
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style> -->

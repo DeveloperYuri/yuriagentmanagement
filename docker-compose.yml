@@ -10,6 +10,7 @@ services:
       - "5173:5173" # Untuk Vite (Inertia/Vue)
     volumes:
       - .:/var/www
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     networks:
       - yuri_network
 
