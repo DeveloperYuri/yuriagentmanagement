@@ -1,198 +1,317 @@
 <script setup>
-import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { ref } from "vue";
+import { Link } from "@inertiajs/vue3";
+import ApplicationLogo from "@/Components/ApplicationLogo.vue";
+import Dropdown from "@/Components/Dropdown.vue";
+import DropdownLink from "@/Components/DropdownLink.vue";
+import { Head } from "@inertiajs/vue3";
+import {
+    HomeIcon,
+    UsersIcon,
+    ArrowUpTrayIcon,
+    Cog6ToothIcon,
+    Bars3Icon,
+    XMarkIcon,
+    ChevronRightIcon,
+} from "@heroicons/vue/24/outline";
 
-const showingNavigationDropdown = ref(false);
+const isSidebarOpen = ref(true); // Sidebar terbuka default di desktop
+const isMobileMenuOpen = ref(false); // Sidebar mobile
+
+const toggleSidebar = () => {
+    isSidebarOpen.value = !isSidebarOpen.value;
+};
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                class="border-b border-gray-100 bg-white"
+    <Head title="Dashboard" />
+
+    <div class="min-h-screen bg-gray-100 flex">
+        <aside
+            :class="[
+                isSidebarOpen ? 'w-64' : 'w-20',
+                isMobileMenuOpen
+                    ? 'translate-x-0'
+                    : '-translate-x-full lg:translate-x-0',
+            ]"
+            class="fixed inset-y-0 left-0 z-50 bg-[#343a40] text-gray-300 transition-all duration-300 ease-in-out shadow-xl lg:static lg:inset-0"
+        >
+            <div
+                class="h-16 flex items-center px-4 bg-[#3b444b] border-b border-gray-700 overflow-hidden whitespace-nowrap"
             >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
-                                </Link>
-                            </div>
+                <Link
+                    :href="route('dashboard')"
+                    class="flex items-center gap-3"
+                >
+                    <ApplicationLogo
+                        :show-text="isSidebarOpen"
+                        class="h-8 fill-current text-indigo-400 shrink-0"
+                    />
+                    <!-- <ApplicationLogo
+                        class="h-8 w-8 fill-current text-indigo-400 shrink-0"
+                    /> -->
+                    <!-- <span
+                        v-show="isSidebarOpen"
+                        class="font-bold text-xl text-white tracking-wider uppercase"
+                        >Yuri
+                        <span class="font-light text-gray-400">ERP</span></span
+                    > -->
+                </Link>
+            </div>
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                        </div>
+            <div
+                class="px-4 py-5 border-b border-gray-700 flex items-center gap-3 overflow-hidden whitespace-nowrap bg-[#3b444b]/30"
+            >
+                <div class="shrink-0 relative">
+                    <img
+                        :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=6366f1&color=fff`"
+                        class="h-10 w-10 rounded-full border-2 border-gray-600 shadow-sm"
+                        alt="User"
+                    />
+                    <span
+                        class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-[#343a40]"
+                    ></span>
+                </div>
+                <div
+                    v-show="isSidebarOpen"
+                    class="transition-opacity duration-300"
+                >
+                    <p class="text-sm font-bold text-white truncate w-32">
+                        {{ $page.props.auth.user.name }}
+                    </p>
+                    <p
+                        class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold italic"
+                    >
+                        {{ $page.props.auth.user?.roles?.[0] || "No Role" }}
+                    </p>
+                    <!-- <p
+                        class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold italic"
+                    >
+                        Administrator
+                    </p> -->
+                </div>
+            </div>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
+            <nav class="mt-4 px-2 space-y-1">
+                <Link
+                    v-if="
+                        $page.props.auth.user?.roles?.some((role) =>
+                            ['admin', 'manager'].includes(role),
+                        )
+                    "
+                    :href="route('dashboard')"
+                    :class="
+                        route().current('dashboard')
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <HomeIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Dashboard</span
+                    >
+                </Link>
 
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
+                <Link
+                    :href="route('agents.index')"
+                    :class="
+                        $page.component === 'Agents/Index'
+                            ? 'bg-gray-700 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <UsersIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Daftar Agents</span
+                    >
+                </Link>
 
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
+                <Link
+                    href="#"
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
+                >
+                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Upload Laporan Excel</span
+                    >
+                </Link>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+                <div class="pt-4 pb-2">
+                    <p
+                        v-show="isSidebarOpen"
+                        class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2"
+                    >
+                        Sistem
+                    </p>
+                    <hr class="border-gray-700 mx-2" v-show="!isSidebarOpen" />
                 </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
+                <Link
+                    href="#"
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
                 >
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4"
+                    <Cog6ToothIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Pengaturan</span
                     >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
+                </Link>
+            </nav>
+
+            <!-- <nav class="mt-4 px-2 space-y-1">
+                <Link
+                    v-if="
+                        $page.props.auth.user?.roles?.some((role) =>
+                            ['admin', 'manager'].includes(role),
+                        )
+                    "
+                    :href="route('dashboard')"
+                    :class="
+                        route().current('dashboard')
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <HomeIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Dashboard</span
+                    >
+                </Link>
+
+                <Link
+                    :href="route('agents.index')"
+                    :class="{
+                        'bg-gray-700 text-white':
+                            $page.component === 'Agents/Index',
+                    }"
+                    class="group flex items-center ..."
+                >
+                    <UsersIcon class="h-6 w-6" />
+                    <span v-show="isSidebarOpen">Daftar Agents</span>
+                </Link>
+
+                <Link
+                    href="#"
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
+                >
+                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Upload Laporan Excel</span
+                    >
+                </Link>
+
+                <div class="pt-4 pb-2">
+                    <p
+                        v-show="isSidebarOpen"
+                        class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2"
+                    >
+                        Sistem
+                    </p>
+                    <hr class="border-gray-700 mx-2" v-show="!isSidebarOpen" />
+                </div>
+
+                <Link
+                    href="#"
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
+                >
+                    <Cog6ToothIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Pengaturan</span
+                    >
+                </Link>
+            </nav> -->
+        </aside>
+
+        <div
+            v-if="isMobileMenuOpen"
+            @click="isMobileMenuOpen = false"
+            class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        ></div>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header
+                class="h-16 bg-white shadow-sm border-b flex items-center justify-between px-4 sticky top-0 z-30"
+            >
+                <div class="flex items-center gap-4">
+                    <button
+                        @click="toggleSidebar"
+                        class="hidden lg:block p-1 text-gray-500 hover:text-indigo-600 transition"
+                    >
+                        <Bars3Icon class="h-6 w-6" />
+                    </button>
+                    <button
+                        @click="isMobileMenuOpen = true"
+                        class="lg:hidden p-1 text-gray-500"
+                    >
+                        <Bars3Icon class="h-6 w-6" />
+                    </button>
+
+                    <h2
+                        class="font-black text-gray-800 uppercase tracking-tight text-lg"
+                    >
+                        <slot name="header" />
+                    </h2>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <Dropdown align="right" width="48">
+                        <template #trigger>
+                            <button
+                                class="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition"
                             >
                                 {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                        </div>
-
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
+                                <img
+                                    :src="`https://ui-avatars.com/api/?name=${$page.props.auth.user.name}&background=f3f4f6&color=333`"
+                                    class="h-8 w-8 rounded-full border border-gray-200"
+                                />
+                            </button>
+                        </template>
+                        <template #content>
+                            <DropdownLink :href="route('profile.edit')">
                                 Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
+                            </DropdownLink>
+                            <DropdownLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
                                 Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
+                            </DropdownLink>
+                        </template>
+                    </Dropdown>
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main>
+            <main class="p-6 overflow-y-auto">
                 <slot />
             </main>
+
+            <footer
+                class="mt-auto bg-white border-t p-4 text-xs text-gray-500 flex justify-between"
+            >
+                <div><b>Copyright &copy; 2026</b> Yuri Agent Management.</div>
+                <div class="hidden sm:block"><b>Version</b> 1.0.0-dev</div>
+            </footer>
         </div>
     </div>
 </template>
+
+<style>
+aside {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Tambahan buat jaga-jaga kalau icon masih bandel */
+aside svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+}
+</style>
+
+<!-- <style scoped>
+/* Transisi halus untuk sidebar */
+aside {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style> -->
