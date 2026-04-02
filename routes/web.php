@@ -3,6 +3,9 @@
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AgentReportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegionalController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -38,23 +41,27 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // 1. Halaman List Agen (Tampilan Tabel)
+    // Route Master Agent
     Route::get('/agents', [AgentController::class, 'index'])->name('agents.index');
-
-    // 2. Proses Simpan Agen Baru (Action Form)
     Route::post('/agents', [AgentController::class, 'store'])->name('agents.store');
-
-    // 3. Proses Update (Opsional buat nanti)
     Route::put('/agents/{agent}', [AgentController::class, 'update'])->name('agents.update');
-
-    // 4. Proses Hapus (Opsional buat nanti)
     Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
 
+    // Route Upload Laporan Agent
     Route::get('/reports', [AgentReportController::class, 'index'])->name('reports.index');
     Route::post('/reports', [AgentReportController::class, 'store'])->name('reports.store');
     Route::get('/reports/{report}/download', [AgentReportController::class, 'download'])->name('reports.download');
     Route::put('/reports/{report}', [AgentReportController::class, 'update'])->name('reports.update');
     Route::delete('/reports/{report}', [AgentReportController::class, 'destroy'])->name('reports.destroy');
+
+    // Route Management Role
+    Route::resource('roles', RoleController::class);
+
+    // Route Regional
+    Route::resource('regional', RegionalController::class);
+
+    // Route Management Role
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__ . '/auth.php';

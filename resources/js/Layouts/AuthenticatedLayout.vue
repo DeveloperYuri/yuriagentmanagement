@@ -5,6 +5,7 @@ import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
 import { Head } from "@inertiajs/vue3";
+import { onMounted } from "vue";
 import {
     HomeIcon,
     UsersIcon,
@@ -17,9 +18,29 @@ import {
 
 const isSidebarOpen = ref(true); // Sidebar terbuka default di desktop
 const isMobileMenuOpen = ref(false); // Sidebar mobile
+const isSettingsOpen = ref(false);
+
+onMounted(() => {
+    if (
+        route().current("roles.*") ||
+        route().current("regional.*") ||
+        route().current("users.*") // Tambahkan ini
+    ) {
+        isSettingsOpen.value = true;
+    }
+});
 
 const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value;
+    // Jika sidebar ditutup, tutup juga dropdown pengaturan agar tidak berantakan
+    if (!isSidebarOpen.value) isSettingsOpen.value = false;
+};
+
+const toggleSettings = () => {
+    if (!isSidebarOpen.value) {
+        isSidebarOpen.value = true; // Buka sidebar dulu jika sedang ciut
+    }
+    isSettingsOpen.value = !isSettingsOpen.value;
 };
 </script>
 
@@ -45,7 +66,7 @@ const toggleSidebar = () => {
                 >
                     <ApplicationLogo
                         :show-text="isSidebarOpen"
-                        class="h-8 fill-current text-blue-400 shrink-0" 
+                        class="h-8 fill-current text-blue-400 shrink-0"
                     />
                 </Link>
             </div>
@@ -88,7 +109,7 @@ const toggleSidebar = () => {
                     :href="route('dashboard')"
                     :class="
                         route().current('dashboard')
-                            ? 'bg-blue-600 text-white shadow-lg' 
+                            ? 'bg-blue-600 text-white shadow-lg'
                             : 'hover:bg-gray-700 hover:text-white'
                     "
                     class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
@@ -139,15 +160,65 @@ const toggleSidebar = () => {
                     <hr class="border-gray-700 mx-2" v-show="!isSidebarOpen" />
                 </div>
 
-                <Link
-                    href="#"
-                    class="group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
-                >
-                    <Cog6ToothIcon class="h-6 w-6 shrink-0" />
-                    <span v-show="isSidebarOpen" class="text-sm font-medium"
-                        >Pengaturan</span
+                <div class="space-y-1">
+                    <button
+                        @click="toggleSettings"
+                        class="w-full group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"
                     >
-                </Link>
+                        <Cog6ToothIcon class="h-6 w-6 shrink-0" />
+                        <span
+                            v-show="isSidebarOpen"
+                            class="text-sm font-medium flex-1 text-left"
+                            >Pengaturan</span
+                        >
+                        <ChevronRightIcon
+                            v-show="isSidebarOpen"
+                            :class="{ 'rotate-90': isSettingsOpen }"
+                            class="h-4 w-4 transition-transform duration-200"
+                        />
+                    </button>
+
+                    <div
+                        v-show="isSettingsOpen && isSidebarOpen"
+                        class="pl-10 space-y-1 overflow-hidden transition-all"
+                    >
+                        <Link
+                            :href="route('roles.index')"
+                            :class="
+                                route().current('roles.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Manajemen Role
+                        </Link>
+
+                        <Link
+                            :href="route('regional.index')"
+                            :class="
+                                route().current('regional.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Regional
+                        </Link>
+
+                        <Link
+                            :href="route('users.index')"
+                            :class="
+                                route().current('users.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Manajemen User
+                        </Link>
+                    </div>
+                </div>
             </nav>
         </aside>
 

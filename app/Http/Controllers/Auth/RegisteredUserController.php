@@ -13,6 +13,7 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -21,7 +22,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        // return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', [
+            'roles' => Role::all() // Mengambil semua data dari table roles
+        ]);
     }
 
     /**

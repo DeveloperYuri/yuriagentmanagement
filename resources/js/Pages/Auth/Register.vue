@@ -5,13 +5,22 @@ import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
+import { ref } from "vue";
+
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+
+const props = defineProps({
+    roles: Array, // Tambahkan ini untuk menerima data dari controller
+});
 
 const form = useForm({
     name: "",
     email: "",
     password: "",
     password_confirmation: "",
-    role: '',
+    role: "",
 });
 
 const submit = () => {
@@ -66,16 +75,77 @@ const submit = () => {
                     v-model="form.role"
                     required
                 >
-                    <option value="" disabled selected>Pilih Role Anda</option>
-                    <option value="user">User Agent</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Administrator</option>
+                    <option value="" disabled>Pilih Role Anda</option>
+
+                    <option
+                        v-for="role in roles"
+                        :key="role.id"
+                        :value="role.name"
+                    >
+                        {{ role.name }}
+                    </option>
                 </select>
 
                 <InputError class="mt-2" :message="form.errors.role" />
             </div>
 
             <div class="mt-4">
+                <InputLabel for="password" value="Password" />
+
+                <div class="relative mt-1">
+                    <TextInput
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        class="block w-full pr-10"
+                        v-model="form.password"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                        <EyeIcon v-if="!showPassword" class="h-5 w-5" />
+                        <EyeSlashIcon v-else class="h-5 w-5" />
+                    </button>
+                </div>
+
+                <InputError class="mt-2" :message="form.errors.password" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel
+                    for="password_confirmation"
+                    value="Confirm Password"
+                />
+
+                <div class="relative mt-1">
+                    <TextInput
+                        id="password_confirmation"
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        class="block w-full pr-10"
+                        v-model="form.password_confirmation"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        @click="showConfirmPassword = !showConfirmPassword"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                        <EyeIcon v-if="!showConfirmPassword" class="h-5 w-5" />
+                        <EyeSlashIcon v-else class="h-5 w-5" />
+                    </button>
+                </div>
+
+                <InputError
+                    class="mt-2"
+                    :message="form.errors.password_confirmation"
+                />
+            </div>
+
+            <!-- <div class="mt-4">
                 <InputLabel for="password" value="Password" />
 
                 <TextInput
@@ -109,7 +179,7 @@ const submit = () => {
                     class="mt-2"
                     :message="form.errors.password_confirmation"
                 />
-            </div>
+            </div> -->
 
             <div class="mt-4 flex items-center justify-end">
                 <Link
