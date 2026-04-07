@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
+use App\Models\Regional;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,22 +11,27 @@ class AgentController extends Controller
 {
     public function index()
     {
-        // Ambil semua data agent, urutkan dari yang terbaru
+        // Tambahkan with('regional') untuk memanggil data relasinya
         return Inertia::render('Agents/Index', [
-            'agents' => Agent::latest()->get()
+            'agents' => Agent::with('regional')->latest()->get(),
+            'regionals' => Regional::orderBy('name', 'asc')->get()
         ]);
     }
 
     public function store(Request $request)
     {
+        // dd($request->all());
         // 1. Validasi Data
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:agents,code',
             'name' => 'required|string|max:255',
+            'regional_id' => 'required|exists:regionals,id', // Tambahkan ini
         ], [
             'code.unique' => 'Kode Agent ini sudah terdaftar!',
             'code.required' => 'Kode wajib diisi.',
             'name.required' => 'Nama wajib diisi.',
+            'regional_id.required' => 'Regional wajib dipilih.', // Custom message
+            'regional_id.exists' => 'Regional yang dipilih tidak valid.', // Custom message
         ]);
 
         // 2. Simpan ke Database

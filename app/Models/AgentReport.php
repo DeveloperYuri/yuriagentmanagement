@@ -18,12 +18,18 @@ class AgentReport extends Model
         'year',
         'file_path',
         'file_name',
-        'notes'
+        'notes',
+        'user_id'
     ];
 
     // Relasi balik ke Agent
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

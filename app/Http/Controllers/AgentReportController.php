@@ -5,16 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\Agent;
 use App\Models\AgentReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 
 class AgentReportController extends Controller
 {
+    // public function index()
+    // {
+    //     return Inertia::render('Reports/Index', [
+    //         'reports' => AgentReport::with('agent')->latest()->get(),
+    //         'agents' => Agent::all() // Untuk pilihan dropdown saat upload
+    //     ]);
+    // }
+
     public function index()
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $reports = AgentReport::with(['agent', 'user'])
+            ->latest()
+            // Sekarang garis merah pada hasAnyRole seharusnya hilang
+            ->when(!$user->hasAnyRole(['Administrator', 'GM']), function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->get();
+
         return Inertia::render('Reports/Index', [
-            'reports' => AgentReport::with('agent')->latest()->get(),
-            'agents' => Agent::all() // Untuk pilihan dropdown saat upload
+            'reports' => $reports,
+            'agents' => Agent::all(),
         ]);
     }
 
@@ -24,7 +44,7 @@ class AgentReportController extends Controller
         // dd($request->all(), $request->file('file'));
 
         $rules = [
-            'agent_id' => 'required|exists:agents,id',
+            // 'agent_id' => 'required|exists:agents,id',
             'month'    => 'required|integer|between:1,12',
             'year'     => 'required|integer',
             'file'     => 'required|mimes:xlsx,xls,pdf,csv,txt|max:10240',
@@ -32,8 +52,8 @@ class AgentReportController extends Controller
 
         // Tulis pesan custom di sini
         $messages = [
-            'agent_id.required' => 'Waduh, Nama Agent-nya lupa dipilih nih.',
-            'agent_id.exists'   => 'Agent tidak terdaftar di sistem.',
+            // 'agent_id.required' => 'Waduh, Nama Agent-nya lupa dipilih nih.',
+            // 'agent_id.exists'   => 'Agent tidak terdaftar di sistem.',
             'file.required'     => 'File laporan wajib diupload ya!',
             'file.mimes'        => 'Format file harus Excel (.xlsx, .xls).',
             'file.max'          => 'File size terlalu besar, maksimal 10MB.',
@@ -49,6 +69,7 @@ class AgentReportController extends Controller
 
             AgentReport::create([
                 'agent_id'  => $request->agent_id,
+                'user_id' => Auth::id(),
                 'month'     => $request->month,
                 'year'      => $request->year,
                 'file_path' => $path,

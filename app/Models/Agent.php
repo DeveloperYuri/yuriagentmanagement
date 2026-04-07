@@ -23,6 +23,7 @@ class Agent extends Model
         'name',
         'phone',
         'address',
+        'regional_id',
         'is_active',
     ];
 
@@ -34,4 +35,9 @@ class Agent extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function regional()
+    {
+        return $this->belongsTo(Regional::class);
+    }
 }

@@ -4,7 +4,7 @@ import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, Link, useForm, router } from "@inertiajs/vue3";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 
@@ -12,7 +12,8 @@ const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
 const props = defineProps({
-    roles: Array, // Tambahkan ini untuk menerima data dari controller
+    roles: Array,
+    regionals: Array, // Tambahkan ini untuk menerima data dari controller
 });
 
 const form = useForm({
@@ -21,6 +22,7 @@ const form = useForm({
     password: "",
     password_confirmation: "",
     role: "",
+    regional_id: "",
 });
 
 const submit = () => {
@@ -87,6 +89,26 @@ const submit = () => {
                 </select>
 
                 <InputError class="mt-2" :message="form.errors.role" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="regional_id" value="Regional / Wilayah" />
+                <select
+                    id="regional_id"
+                    v-model="form.regional_id"
+                    class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm text-sm"
+                    required
+                >
+                    <option value="" disabled>-- Pilih Regional --</option>
+                    <option
+                        v-for="reg in regionals"
+                        :key="reg.id"
+                        :value="reg.id"
+                    >
+                        {{ reg.name }}
+                    </option>
+                </select>
+                <InputError class="mt-2" :message="form.errors.regional_id" />
             </div>
 
             <div class="mt-4">

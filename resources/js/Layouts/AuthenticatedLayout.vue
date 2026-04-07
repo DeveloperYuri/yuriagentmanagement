@@ -1,10 +1,9 @@
 <script setup>
 import { ref } from "vue";
-import { Link } from "@inertiajs/vue3";
+import { Link, usePage, Head } from "@inertiajs/vue3";
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
-import { Head } from "@inertiajs/vue3";
 import { onMounted } from "vue";
 import {
     HomeIcon,
@@ -15,6 +14,16 @@ import {
     XMarkIcon,
     ChevronRightIcon,
 } from "@heroicons/vue/24/outline";
+
+import { computed } from "vue";
+
+const page = usePage();
+
+// Gunakan computed property agar reaktif
+const isAdmin = computed(() => {
+    // Cek apakah user ada dan memiliki role administrator
+    return page.props.auth.user?.roles.includes("Administrator");
+});
 
 const isSidebarOpen = ref(true); // Sidebar terbuka default di desktop
 const isMobileMenuOpen = ref(false); // Sidebar mobile
@@ -121,6 +130,26 @@ const toggleSettings = () => {
                 </Link>
 
                 <Link
+                    v-if="
+                        $page.props.auth.user?.roles?.some((role) =>
+                            ['Administrator', 'General Manager (GM)'].includes(role),
+                        )
+                    "
+                    :href="route('agents.index')"
+                    :class="
+                        $page.component === 'Agents/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <UsersIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium">
+                        Daftar Agents
+                    </span>
+                </Link>
+
+                <!-- <Link
                     :href="route('agents.index')"
                     :class="
                         $page.component === 'Agents/Index'
@@ -133,7 +162,7 @@ const toggleSettings = () => {
                     <span v-show="isSidebarOpen" class="text-sm font-medium"
                         >Daftar Agents</span
                     >
-                </Link>
+                </Link> -->
 
                 <Link
                     :href="route('reports.index')"
@@ -160,7 +189,7 @@ const toggleSettings = () => {
                     <hr class="border-gray-700 mx-2" v-show="!isSidebarOpen" />
                 </div>
 
-                <div class="space-y-1">
+                <div class="space-y-1" v-if="isAdmin">
                     <button
                         @click="toggleSettings"
                         class="w-full group flex items-center gap-3 px-3 py-3 rounded-md hover:bg-gray-700 hover:text-white transition-all"

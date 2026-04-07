@@ -1,13 +1,33 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Modal from "@/Components/Modal.vue";
-import { Head, useForm, router } from "@inertiajs/vue3";
+import { Head, useForm, router, usePage } from "@inertiajs/vue3";
 import { useToast } from "vue-toastification";
+
+const page = usePage();
+
+// Buat fungsi pengecekan role
+// Di bagian <script setup>
+const canSeeAgentColumn = computed(() => {
+    // Ambil array roles, jika tidak ada set ke array kosong
+    const userRoles = page.props.auth.user?.roles || [];
+
+    // Ambil item pertama dan ubah ke huruf kecil untuk pengecekan yang aman
+    const primaryRole = userRoles[0]?.toLowerCase();
+
+    if (!primaryRole) return false;
+
+    return [
+        "administrator",
+        "general manager",
+        "general manager (gm)",
+    ].includes(primaryRole);
+});
 
 const props = defineProps({
     reports: Array,
-    agents: Array,
+    // agents: Array,
 });
 
 const showModal = ref(false);
@@ -32,7 +52,7 @@ const openEditModal = (report) => {
     editingId.value = report.id;
 
     // Isi form dengan data yang akan diedit
-    form.agent_id = report.agent_id;
+    // form.agent_id = report.agent_id;
     form.month = report.month;
     form.year = report.year;
     form.file = null; // File dikosongkan kecuali user ingin ganti
@@ -72,39 +92,8 @@ const submit = () => {
     }
 };
 
-// const submit = () => {
-//     if (isEditing.value) {
-//         // Mode Update
-//         // Laravel butuh _method: 'put' untuk upload file via POST spoofing
-//         form.post(route("reports.update", editingId.value), {
-//             forceFormData: true,
-//             onBefore: () => form.setData("_method", "put"),
-//             onSuccess: () => {
-//                 toast.success("Laporan berhasil diperbarui!");
-//                 closeModal();
-//             },
-//         });
-//     } else {
-//         // Mode Create (Tetap seperti sebelumnya)
-//         form.post(route("reports.store"), {
-//             forceFormData: true,
-//             onSuccess: () => {
-//                 toast.success("Laporan berhasil diupload!");
-//                 closeModal();
-//             },
-//         });
-//     }
-// };
-
-// const closeModal = () => {
-//     showModal.value = false;
-//     form.reset(); // Mengembalikan data ke nilai default
-//     form.clearErrors(); // MENGHAPUS semua pesan error merah
-//     if (fileInput.value) fileInput.value.value = null; // Reset input file fisiknya
-// };
-
 const form = useForm({
-    agent_id: "",
+    // agent_id: "",
     month: new Date().getMonth() + 1, // Default bulan sekarang
     year: new Date().getFullYear(), // Default tahun sekarang
     file: null,
@@ -125,32 +114,6 @@ const months = [
     "Desember",
 ];
 
-// const submit = () => {
-//     // toast.info("Mencoba upload...");
-//     form.post(route("reports.store"), {
-//         // Force FormData agar file terkirim dengan benar
-//         forceFormData: true,
-
-//         onSuccess: () => {
-//             // 1. Munculkan Toast Sukses
-//             toast.success("Laporan berhasil diupload!", {
-//                 timeout: 2000,
-//                 position: "top-right",
-//             });
-
-//             // 2. Bersihkan form & tutup modal (panggil fungsi closeModal yang tadi)
-//             closeModal();
-//         },
-//         // onError: () => {
-//         //     // Munculkan Toast Error jika validasi gagal di sisi server
-//         //     toast.error("Gagal mengupload laporan. Cek kembali inputan Anda.");
-//         // },
-//         onFinish: () => {
-//             // Logic tambahan jika perlu (misal stop loading manual)
-//         },
-//     });
-// };
-
 const downloadFile = (id) => {
     window.location.href = route("reports.download", id);
 };
@@ -158,6 +121,7 @@ const downloadFile = (id) => {
 // ... import yang sudah ada ...
 
 const confirmDelete = (report) => {
+    console.log("Tombol hapus diklik untuk report ID:", report.id);
     reportToDelete.value = report;
     showDeleteModal.value = true;
 };
@@ -182,6 +146,11 @@ const executeDelete = () => {
 
     <AuthenticatedLayout>
         <template #header>Laporan Bulanan Agent</template>
+
+        <!-- <p>
+            Role Anda saat ini:
+            {{ $page.props.auth.user.roles?.[0] || "Tidak ada role" }}
+        </p> -->
 
         <div class="space-y-6">
             <div
@@ -211,7 +180,14 @@ const executeDelete = () => {
                         class="bg-gray-50 text-gray-600 uppercase font-bold text-[10px] border-b"
                     >
                         <tr>
-                            <th class="px-6 py-4 text-center">Agent</th>
+                            <!-- <th class="px-6 py-4 text-center">Nama Agent</th> -->
+                            <th
+                                v-if="canSeeAgentColumn"
+                                class="px-6 py-4 text-center"
+                            >
+                                Nama Agent
+                            </th>
+
                             <th class="px-6 py-4 text-center">Periode</th>
                             <th class="px-6 py-4 text-center">Nama File</th>
                             <th class="px-6 py-4 text-center">Aksi</th>
@@ -224,9 +200,26 @@ const executeDelete = () => {
                             class="hover:bg-gray-50 transition"
                         >
                             <td
-                                class="px-6 py-4 font-bold text-gray-700 text-center"
+                                v-if="canSeeAgentColumn"
+                                class="px-6 py-4 text-center font-bold text-gray-700"
                             >
-                                {{ report.agent.name }}
+                                {{
+                                    report.user?.name ||
+                                    report.agent?.user?.name ||
+                                    "-"
+                                }}
+                            </td>
+
+                            <td
+                                v-if="
+                                    [
+                                        'Administrator',
+                                        'General Manager (GM)',
+                                    ].includes($page.props.auth.user.role)
+                                "
+                                class="px-6 py-4 text-center"
+                            >
+                                -
                             </td>
 
                             <td class="px-6 py-4 text-center">
@@ -331,7 +324,7 @@ const executeDelete = () => {
                 </h2>
 
                 <form @submit.prevent="submit" class="space-y-4">
-                    <div>
+                    <!-- <div>
                         <label
                             class="block text-xs font-bold text-gray-500 mb-1 uppercase"
                         >
@@ -357,7 +350,7 @@ const executeDelete = () => {
                         >
                             {{ form.errors.agent_id }}
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -463,6 +456,66 @@ const executeDelete = () => {
 
         <Modal
             :show="showDeleteModal"
+            :closeable="true"
+            @close="showDeleteModal = false"
+        >
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-3">
+                    Konfirmasi Hapus Laporan
+                </h2>
+
+                <div class="mt-4" v-if="reportToDelete">
+                    <p class="text-sm text-gray-600">
+                        Apakah Anda yakin ingin menghapus laporan berikut?
+                    </p>
+
+                    <div
+                        class="mt-3 p-3 bg-red-50 rounded-lg border border-red-100"
+                    >
+                        <table class="text-sm">
+                            <tr>
+                                <td class="pr-4 text-gray-500">Periode</td>
+                                <td class="font-bold uppercase">
+                                    : {{ months[reportToDelete.month - 1] }}
+                                    {{ reportToDelete.year }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pr-4 text-gray-500">File</td>
+                                <td class="font-bold text-xs">
+                                    : {{ reportToDelete.file_name }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p class="mt-4 text-[11px] text-red-500 italic">
+                        *File di server akan dihapus secara permanen dan tidak
+                        bisa dikembalikan.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-8">
+                    <button
+                        type="button"
+                        @click="showDeleteModal = false"
+                        class="text-gray-500 text-sm font-bold px-4 py-2 hover:bg-gray-100 rounded-md transition"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        @click="executeDelete"
+                        class="bg-red-600 text-white px-5 py-2 rounded-md font-bold text-sm hover:bg-red-700 shadow-sm transition"
+                    >
+                        Ya, Hapus Laporan
+                    </button>
+                </div>
+            </div>
+        </Modal>
+
+        <!-- <Modal
+            :show="showDeleteModal"
             :closeable="false"
             @close="showDeleteModal = false"
         >
@@ -523,6 +576,6 @@ const executeDelete = () => {
                     </button>
                 </div>
             </div>
-        </Modal>
+        </Modal> -->
     </AuthenticatedLayout>
 </template>

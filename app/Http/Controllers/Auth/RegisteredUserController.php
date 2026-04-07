@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
+use App\Models\Regional; // Pastikan import model Regional
 
 class RegisteredUserController extends Controller
 {
@@ -24,7 +25,8 @@ class RegisteredUserController extends Controller
     {
         // return Inertia::render('Auth/Register');
         return Inertia::render('Auth/Register', [
-            'roles' => Role::all() // Mengambil semua data dari table roles
+            'roles' => Role::all(), // Mengambil semua data dari table roles
+            'regionals' => Regional::all() // ambil data regional
         ]);
     }
 
@@ -35,6 +37,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
@@ -46,6 +49,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'regional_id' => $request->regional_id,
         ]);
 
         // Tempelkan role sesuai pilihan dari form

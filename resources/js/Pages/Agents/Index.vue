@@ -18,6 +18,7 @@ const agentToDelete = ref(null);
 const form = useForm({
     code: "",
     name: "",
+    regional_id: "",
 });
 
 // Fungsi untuk buka modal TAMBAH
@@ -90,14 +91,6 @@ const executeDelete = () => {
         },
     });
 };
-
-// const deleteAgent = (agent) => {
-//     if (confirm(`Apakah Anda yakin ingin menghapus agent ${agent.name}?`)) {
-//         router.delete(route("agents.destroy", agent.id), {
-//             preserveScroll: true,
-//         });
-//     }
-// };
 </script>
 
 <template>
@@ -136,6 +129,7 @@ const executeDelete = () => {
                         <tr>
                             <th class="px-6 py-4 text-center">Kode</th>
                             <th class="px-6 py-4 text-center">Nama Agent</th>
+                            <th class="px-6 py-4 text-center">Regional</th>
                             <th class="px-6 py-4 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -153,6 +147,9 @@ const executeDelete = () => {
 
                             <td class="px-6 py-4 text-gray-800 text-center">
                                 {{ agent.name }}
+                            </td>
+                            <td class="px-6 py-4 text-gray-800 text-center">
+                                {{ agent.regional?.name || "-" }}
                             </td>
 
                             <td class="px-6 py-4">
@@ -254,6 +251,42 @@ const executeDelete = () => {
                             class="w-full border-gray-300 rounded-md shadow-sm"
                             required
                         />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-gray-500 mb-1 uppercase"
+                        >
+                            Regional / Wilayah
+                        </label>
+                        <select
+                            v-model="form.regional_id"
+                            class="w-full border-gray-300 rounded-md shadow-sm text-sm"
+                            required
+                        >
+                            <option value="" disabled selected>
+                                -- Pilih Regional --
+                            </option>
+                            <option
+                                v-for="reg in $page.props.regionals"
+                                :key="reg.id"
+                                :value="reg.id"
+                            >
+                                {{ reg.name }}
+                            </option>
+                        </select>
+                        <div
+                            v-if="form.errors.regional_id"
+                            class="text-red-500 text-xs mt-1"
+                        >
+                            {{ form.errors.regional_id }}
+                        </div>
+                        <div
+                            v-if="form.errors.regional_id"
+                            class="text-red-500 text-xs mt-1"
+                        >
+                            {{ form.errors.regional_id }}
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-2 mt-4">
