@@ -92,4 +92,18 @@ class UserController extends Controller
         $user->delete();
         return redirect()->back();
     }
+
+    public function assignSupervisor(Request $request, User $user)
+    {
+        $request->validate([
+            'supervisor_ids' => 'array',
+            'supervisor_ids.*' => 'exists:users,id',
+        ]);
+
+        // $user di sini adalah Agent yang dipilih
+        // sync akan menghapus relasi lama dan memasukkan yang baru dari array
+        $user->supervisors()->sync($request->supervisor_ids);
+
+        return back()->with('message', 'Supervisor berhasil diupdate!');
+    }
 }

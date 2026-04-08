@@ -46,6 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/agents', [AgentController::class, 'store'])->name('agents.store');
     Route::put('/agents/{agent}', [AgentController::class, 'update'])->name('agents.update');
     Route::delete('/agents/{agent}', [AgentController::class, 'destroy'])->name('agents.destroy');
+    Route::post('/agents/{agent}/assign-supervisor', [AgentController::class, 'updateSupervisors'])
+        ->name('agents.assign-supervisor');
 
     // Route Upload Laporan Agent
     Route::get('/reports', [AgentReportController::class, 'index'])->name('reports.index');
@@ -62,6 +64,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Route Management Role
     Route::resource('users', UserController::class);
+    // routes/web.php
+    Route::post('/users/{user}/assign-supervisor', [UserController::class, 'assignSupervisor'])
+        ->name('users.assign-supervisor');
 });
 
 require __DIR__ . '/auth.php';

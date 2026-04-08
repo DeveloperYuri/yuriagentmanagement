@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Modal from "@/Components/Modal.vue";
 import { Head, useForm, router, usePage } from "@inertiajs/vue3";
@@ -7,22 +7,61 @@ import { useToast } from "vue-toastification";
 
 const page = usePage();
 
+const userRole = computed(() => {
+    // Ambil string role pertama, jika tidak ada default ke string kosong
+    const role =
+        page.props.auth.user?.role || page.props.auth.user?.roles?.[0] || "";
+    return role.toLowerCase();
+});
+
+const canManageReport = computed(() => {
+    // Daftar role yang dilarang
+    const restrictedRoles = [
+        "general manager",
+        "general manager (gm)",
+        "regional sales manager (rsm)",
+        "supervisor",
+        "Supervisor",
+    ];
+    return !restrictedRoles.includes(userRole.value);
+});
+
 // Buat fungsi pengecekan role
 // Di bagian <script setup>
-const canSeeAgentColumn = computed(() => {
-    // Ambil array roles, jika tidak ada set ke array kosong
-    const userRoles = page.props.auth.user?.roles || [];
+// const canSeeAgentColumn = computed(() => {
+//     // Ambil array roles, jika tidak ada set ke array kosong
+//     const userRoles = page.props.auth.user?.roles || [];
 
-    // Ambil item pertama dan ubah ke huruf kecil untuk pengecekan yang aman
+//     // Ambil item pertama dan ubah ke huruf kecil untuk pengecekan yang aman
+//     const primaryRole = userRoles[0]?.toLowerCase();
+
+//     if (!primaryRole) return false;
+
+//     return [
+//         "administrator",
+//         "general manager",
+//         "general manager (gm)",
+//     ].includes(primaryRole);
+// });
+
+const canSeeAgentColumn = computed(() => {
+    const userRoles = page.props.auth.user?.roles || [];
+    // Ubah ke huruf kecil semua agar pengecekan lebih aman (case-insensitive)
     const primaryRole = userRoles[0]?.toLowerCase();
 
     if (!primaryRole) return false;
 
-    return [
+    // Daftar role yang diizinkan melihat kolom Nama Agent
+    const allowedRoles = [
         "administrator",
         "general manager",
         "general manager (gm)",
-    ].includes(primaryRole);
+        "regional sales manager (rsm)",
+        "supervisor",
+        "Supervisor", // RSM sekarang bisa melihat kolom ini juga
+    ];
+
+    return allowedRoles.includes(primaryRole);
 });
 
 const props = defineProps({
@@ -139,6 +178,10 @@ const executeDelete = () => {
         },
     });
 };
+
+onMounted(() => {
+    console.log("Data Reports yang diterima:", props.reports);
+});
 </script>
 
 <template>
@@ -257,7 +300,51 @@ const executeDelete = () => {
                                         Download
                                     </button>
 
-                                    <button
+                                    <template v-if="canManageReport">
+                                        <button
+                                            @click="openEditModal(report)"
+                                            class="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 border border-orange-200 rounded-md font-bold text-[11px] hover:bg-orange-600 hover:text-white transition-all duration-200"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-3.5 w-3.5 mr-1"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                />
+                                            </svg>
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            @click="confirmDelete(report)"
+                                            class="inline-flex items-center px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[11px] hover:bg-red-600 hover:text-white transition-all duration-200"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-3.5 w-3.5 mr-1"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
+                                            </svg>
+                                            Hapus
+                                        </button>
+                                    </template>
+
+                                    <!-- <button
                                         @click="openEditModal(report)"
                                         class="inline-flex items-center px-3 py-1 bg-orange-50 text-orange-700 border border-orange-200 rounded-md font-bold text-[11px] hover:bg-orange-600 hover:text-white transition-all duration-200"
                                     >
@@ -297,7 +384,7 @@ const executeDelete = () => {
                                             />
                                         </svg>
                                         Hapus
-                                    </button>
+                                    </button> -->
                                 </div>
                             </td>
                         </tr>

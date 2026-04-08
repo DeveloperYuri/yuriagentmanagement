@@ -53,4 +53,28 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Regional::class);
     }
+
+    // Di dalam class User extends Authenticatable
+    public function supervisors()
+    {
+        // Agent memiliki banyak supervisor
+        return $this->belongsToMany(User::class, 'user_supervisor', 'user_id', 'supervisor_id');
+    }
+
+    public function agents()
+    {
+        // Supervisor memiliki banyak agent
+        return $this->belongsToMany(User::class, 'user_supervisor', 'supervisor_id', 'user_id');
+    }
+
+    // public function monitoredAgents()
+    // {
+    //     return $this->belongsToMany(Agent::class, 'agent_user');
+    // }
+
+    // public function supervisors()
+    // {
+    //     // Menghubungkan Admin Agent (User) ke Supervisor (User) melalui tabel pivot
+    //     return $this->belongsToMany(User::class, 'agent_user', 'agent_id', 'user_id');
+    // }
 }
