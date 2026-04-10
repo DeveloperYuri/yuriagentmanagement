@@ -26,24 +26,6 @@ const canManageReport = computed(() => {
     return !restrictedRoles.includes(userRole.value);
 });
 
-// Buat fungsi pengecekan role
-// Di bagian <script setup>
-// const canSeeAgentColumn = computed(() => {
-//     // Ambil array roles, jika tidak ada set ke array kosong
-//     const userRoles = page.props.auth.user?.roles || [];
-
-//     // Ambil item pertama dan ubah ke huruf kecil untuk pengecekan yang aman
-//     const primaryRole = userRoles[0]?.toLowerCase();
-
-//     if (!primaryRole) return false;
-
-//     return [
-//         "administrator",
-//         "general manager",
-//         "general manager (gm)",
-//     ].includes(primaryRole);
-// });
-
 const canSeeAgentColumn = computed(() => {
     const userRoles = page.props.auth.user?.roles || [];
     // Ubah ke huruf kecil semua agar pengecekan lebih aman (case-insensitive)
@@ -182,6 +164,53 @@ const executeDelete = () => {
 onMounted(() => {
     console.log("Data Reports yang diterima:", props.reports);
 });
+
+const goToMapping = (report) => {
+    if (!report.file_path) {
+        toast.error("File tidak ditemukan");
+        return;
+    }
+
+    router.get(
+        route("import.mapping") +
+            `?filePath=${report.file_path}&agent_id=${report.user_id}`,
+    );
+
+    // router.get(route("import.mapping"), {
+    //     filePath: report.file_path,
+    //     agent_id: report.user_id, // 🔥 INI KUNCI NYA
+    // });
+};
+
+const resetMapping = (report) => {
+    if (!confirm("Yakin mau reset mapping agent ini?")) return;
+
+    router.post(
+        route("mapping.reset"),
+        {
+            agent_id: report.user_id,
+        },
+        {
+            onSuccess: () => {
+                toast.success("Mapping berhasil direset!");
+            },
+            onError: () => {
+                toast.error("Gagal reset mapping");
+            },
+        },
+    );
+};
+
+// const goToMapping = (report) => {
+//     if (!report.file_path) {
+//         toast.error("File tidak ditemukan");
+//         return;
+//     }
+
+//     router.get(route("import.mapping"), {
+//         filePath: report.file_path,
+//     });
+// };
 </script>
 
 <template>
@@ -298,6 +327,20 @@ onMounted(() => {
                                             />
                                         </svg>
                                         Download
+                                    </button>
+
+                                    <button
+                                        @click="goToMapping(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-md font-bold text-[11px] hover:bg-green-600 hover:text-white transition-all duration-200"
+                                    >
+                                        Import
+                                    </button>
+
+                                    <button
+                                        @click="resetMapping(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[11px] hover:bg-red-600 hover:text-white transition-all duration-200"
+                                    >
+                                        Reset Mapping
                                     </button>
 
                                     <template v-if="canManageReport">

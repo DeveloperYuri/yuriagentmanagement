@@ -132,7 +132,9 @@ const toggleSettings = () => {
                 <Link
                     v-if="
                         $page.props.auth.user?.roles?.some((role) =>
-                            ['Administrator', 'General Manager (GM)'].includes(role),
+                            ['Administrator', 'General Manager (GM)'].includes(
+                                role,
+                            ),
                         )
                     "
                     :href="route('agents.index')"
@@ -178,6 +180,36 @@ const toggleSettings = () => {
                         >Upload Laporan Excel</span
                     >
                 </Link>
+
+                <Link
+                    :href="route('import.mapping')"
+                    :class="
+                        route().current('import.*')
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Mapping Center</span
+                    >
+                </Link>
+
+                <!-- <Link
+                    :href="route('reports.index')"
+                    :class="
+                        $page.component === 'Reports/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Laporan Master</span
+                    >
+                </Link> -->
 
                 <div class="pt-4 pb-2">
                     <p

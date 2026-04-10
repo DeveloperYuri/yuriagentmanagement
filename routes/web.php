@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AgentReportController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\InventoryImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegionalController;
 use App\Http\Controllers\RoleController;
@@ -67,6 +69,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // routes/web.php
     Route::post('/users/{user}/assign-supervisor', [UserController::class, 'assignSupervisor'])
         ->name('users.assign-supervisor');
+
+    // web.php
+    // Route::controller(InventoryImportController::class)->group(function () {
+    //     Route::get('/inventory/import', 'index')->name('import.index');
+    //     Route::post('/inventory/import/upload', 'upload')->name('import.upload');
+    //     Route::post('/inventory/import/process', 'process')->name('import.process');
+    // });
+
+    Route::get('/import/mapping', [ImportController::class, 'mapping'])->name('import.mapping');
+    Route::post('/import/process', [ImportController::class, 'process'])->name('import.process');
+    Route::get('/import/preview', [ImportController::class, 'preview'])->name('import.preview');
+
+    Route::post('/import/save-mapping', [ImportController::class, 'saveMapping'])
+    ->name('import.saveMapping');
+    Route::post('/mapping/reset', [ImportController::class, 'resetMapping'])
+    ->name('mapping.reset');
+
 });
 
 require __DIR__ . '/auth.php';
