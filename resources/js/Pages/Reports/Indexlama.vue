@@ -7,49 +7,6 @@ import { useToast } from "vue-toastification";
 import axios from "axios";
 
 const page = usePage();
-const showScanModal = ref(false);
-
-const scanExcel = (report) => {
-    router.get(route("python.mapping"), {
-        file_path: report.file_path,
-    });
-};
-
-// const scanExcel = async (report) => {
-//     try {
-//         const res = await axios.post("/python/scan", {
-//             file_path: report.file_path,
-//         });
-
-//         // 🔥 pindah ke halaman mapping
-//         router.get(route("python.mapping"), {
-//             file_path: report.file_path,
-//             headers: JSON.stringify(res.data.headers),
-//         });
-//     } catch (err) {
-//         console.error(err);
-//         alert("Scan gagal");
-//     }
-// };
-
-// const scanExcel = async (report) => {
-//     try {
-//         const res = await axios.post("http://localhost:8000/python/scan", {
-//             file_path: report.file_path,
-//         });
-
-//         console.log("Hasil scan:", res.data);
-
-//         alert("Scan berhasil!");
-
-//         // optional update UI
-//         // emit("refresh") atau reload data
-//         // window.location.reload();
-//     } catch (err) {
-//         console.error("ERROR SCAN:", err.response?.data || err);
-//         alert(err.response?.data?.message || "Scan gagal");
-//     }
-// };
 
 const userRole = computed(() => {
     // Ambil string role pertama, jika tidak ada default ke string kosong
@@ -245,69 +202,70 @@ const resetMapping = (report) => {
     );
 };
 
-// const scannedData = ref([]);
-// const scannedHeaders = ref([]);
-// const showScanModal = ref(false);
 
-// const scanExcel = async (report) => {
-//     // 1. Validasi file
-//     if (!report || !report.file_path) {
-//         alert("File tidak ditemukan");
-//         return;
-//     }
 
-//     isLoading.value = true;
-//     statusMsg.value = `Menscan file: ${report.file_name}...`;
+const scannedData = ref([]);
+const scannedHeaders = ref([]);
+const showScanModal = ref(false);
+const scanExcel = async (report) => {
+    // 1. Validasi file
+    if (!report || !report.file_path) {
+        alert("File tidak ditemukan");
+        return;
+    }
 
-//     try {
-//         // 2. Request ke backend untuk ambil Header
-//         const res = await axios.post("/python/scan", {
-//             file_path: report.file_path // Kirim path file yang sudah ada di server
-//         });
+    isLoading.value = true;
+    statusMsg.value = `Menscan file: ${report.file_name}...`;
 
-//         if (res.data.status === "success") {
-//             const serverHeaders = res.data.headers;
-//             headers.value = serverHeaders;
+    try {
+        // 2. Request ke backend untuk ambil Header
+        const res = await axios.post("/python/scan", {
+            file_path: report.file_path // Kirim path file yang sudah ada di server
+        });
 
-//             // 3. JALANKAN AUTO-MAPPING OTOMATIS
-//             const autoMappingResult = {};
+        if (res.data.status === "success") {
+            const serverHeaders = res.data.headers;
+            headers.value = serverHeaders;
 
-//             targetFields.forEach((target) => {
-//                 // Logika pencocokan string (Fuzzy Match sederhana)
-//                 const match = serverHeaders.find((h) => {
-//                     const cleanHeader = h.toLowerCase().replace(/[^a-z0-9]/g, "");
-//                     const cleanTarget = target.toLowerCase().replace(/[^a-z0-9]/g, "");
+            // 3. JALANKAN AUTO-MAPPING OTOMATIS
+            const autoMappingResult = {};
+            
+            targetFields.forEach((target) => {
+                // Logika pencocokan string (Fuzzy Match sederhana)
+                const match = serverHeaders.find((h) => {
+                    const cleanHeader = h.toLowerCase().replace(/[^a-z0-9]/g, "");
+                    const cleanTarget = target.toLowerCase().replace(/[^a-z0-9]/g, "");
+                    
+                    // Cek apakah ada kata yang mengandung satu sama lain
+                    return cleanHeader.includes(cleanTarget) || cleanTarget.includes(cleanHeader);
+                });
 
-//                     // Cek apakah ada kata yang mengandung satu sama lain
-//                     return cleanHeader.includes(cleanTarget) || cleanTarget.includes(cleanHeader);
-//                 });
+                if (match) {
+                    autoMappingResult[target] = match;
+                } else {
+                    autoMappingResult[target] = ""; // Tetap kosong jika tidak yakin
+                }
+            });
 
-//                 if (match) {
-//                     autoMappingResult[target] = match;
-//                 } else {
-//                     autoMappingResult[target] = ""; // Tetap kosong jika tidak yakin
-//                 }
-//             });
+            // 4. Masukkan hasil ke form (Reaktif)
+            form.mapping = autoMappingResult;
 
-//             // 4. Masukkan hasil ke form (Reaktif)
-//             form.mapping = autoMappingResult;
+            // Scroll otomatis ke area mapping agar user tahu sudah muncul
+            setTimeout(() => {
+                document.getElementById('mapping-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
 
-//             // Scroll otomatis ke area mapping agar user tahu sudah muncul
-//             setTimeout(() => {
-//                 document.getElementById('mapping-section')?.scrollIntoView({ behavior: 'smooth' });
-//             }, 100);
-
-//             statusMsg.value = "✅ Scan selesai! Mapping telah diisi otomatis.";
-//             isError.value = false;
-//         }
-//     } catch (err) {
-//         console.error(err);
-//         isError.value = true;
-//         statusMsg.value = "❌ Gagal menscan data.";
-//     } finally {
-//         isLoading.value = false;
-//     }
-// };
+            statusMsg.value = "✅ Scan selesai! Mapping telah diisi otomatis.";
+            isError.value = false;
+        }
+    } catch (err) {
+        console.error(err);
+        isError.value = true;
+        statusMsg.value = "❌ Gagal menscan data.";
+    } finally {
+        isLoading.value = false;
+    }
+};
 
 // const scanExcel = async (report) => {
 //     if (!report.file_path) {
@@ -504,7 +462,7 @@ const resetMapping = (report) => {
                                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                                             />
                                         </svg>
-                                        Set Mapping
+                                        Scan Data
                                     </button>
 
                                     <template v-if="canManageReport">

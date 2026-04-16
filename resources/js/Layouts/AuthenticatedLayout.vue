@@ -181,7 +181,7 @@ const toggleSettings = () => {
                     >
                 </Link>
 
-                <Link
+                <!-- <Link
                     :href="route('import.mapping')"
                     :class="
                         route().current('import.*')
@@ -194,7 +194,7 @@ const toggleSettings = () => {
                     <span v-show="isSidebarOpen" class="text-sm font-medium"
                         >Mapping Center</span
                     >
-                </Link>
+                </Link> -->
 
                 <!-- <Link
                     :href="route('reports.index')"

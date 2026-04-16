@@ -33,6 +33,7 @@ const formatNumber = (val) => {
                     <!-- HEADER -->
                     <thead class="bg-gray-200 sticky top-0">
                         <tr>
+                            <th class="px-4 py-2">No</th>
                             <th class="px-4 py-2">Nama Agen</th>
                             <th class="px-4 py-2">Kode Customer</th>
                             <th class="px-4 py-2">Nama Customer</th>
@@ -53,38 +54,73 @@ const formatNumber = (val) => {
                             <th class="px-4 py-2 text-right">Diskon 6</th>
                             <th class="px-4 py-2 text-right">Quantity Bonus</th>
                             <th class="px-4 py-2 text-right">Rafraksi</th>
-                            <th class="px-4 py-2 text-right">Total Invoice Value</th>
+                            <th class="px-4 py-2 text-right">
+                                Total Invoice Value
+                            </th>
                         </tr>
                     </thead>
 
                     <!-- BODY -->
                     <tbody>
-                        <tr 
-                            v-for="(item, i) in data" 
+                        <tr
+                            v-for="(item, i) in data"
                             :key="i"
                             class="border-t hover:bg-gray-50"
                         >
-                            <td class="px-4 py-2">{{ item.nama_agen || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.kode_customer || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.nama_customer || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.alamat_customer || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.nomor_telepon_hp_customer || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.invoice_nomor_agen || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.tanggal_invoice || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.tipe_customer || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.sales || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.sku_kode_agen || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.nama_sku || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.qty_terjual || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon1 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon2 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon3 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon4 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon5 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.diskon6 || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.quantity_bonus || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.rafraksi || '-' }}</td>
-                            <td class="px-4 py-2">{{ item.total_invoice_value || '-' }}</td>
+                            <!-- <td class="px-4 py-2">{{ item.no_urut }}</td> -->
+                            <!-- <td class="px-4 py-2">{{ i + 1 }}</td> -->
+                             <td class="px-4 py-2">
+                                {{ item.no || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.nama_agen || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.kode_customer || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.nama_customer || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.alamat_customer || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.nomor_telepon_hp_customer || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.invoice_nomor_agen || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.tanggal_invoice || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.tipe_customer || "-" }}
+                            </td>
+                            <td class="px-4 py-2">{{ item.sales || "-" }}</td>
+                            <td class="px-4 py-2">
+                                {{ item.sku_kode_agen || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.nama_sku || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.qty_terjual || "-" }}
+                            </td>
+                            <td class="px-4 py-2">{{ item.diskon1 || "-" }}</td>
+                            <td class="px-4 py-2">{{ item.diskon2 || "-" }}</td>
+                            <td class="px-4 py-2">{{ item.diskon3 || "-" }}</td>
+                            <td class="px-4 py-2">{{ item.diskon4 || "-" }}</td>
+                            <td class="px-4 py-2">{{ item.diskon5 || "-" }}</td>
+                            <td class="px-4 py-2">{{ item.diskon6 || "-" }}</td>
+                            <td class="px-4 py-2">
+                                {{ item.quantity_bonus || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.rafraksi || "-" }}
+                            </td>
+                            <td class="px-4 py-2">
+                                {{ item.total_invoice_value || "-" }}
+                            </td>
 
                             <!-- <td class="px-4 py-2 text-right">
                                 {{ formatNumber(item.qty_terjual) }}

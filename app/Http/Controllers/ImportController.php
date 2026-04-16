@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserMapping;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -71,6 +75,7 @@ class ImportController extends Controller
         $headers = array_values(array_filter($headerRow));
 
         $dbColumns = [
+            'no',
             'nama_agen',
             'kode_customer',
             'nama_customer',
@@ -149,6 +154,21 @@ class ImportController extends Controller
             }
 
             $result[] = $item;
+            // $result[] = [
+            //     'no_urut' => count($result) + 1, // 🔥 increment
+            //     ...$item
+            // ];
+
+            // dd([
+            //     'headers' => $headers,
+            //     'sample_assoc' => $assocRow,
+            //     'mapping' => $mapping,
+            //     'sample_item' => $item
+            // ]);
+
+            // dd([
+            //     'total_result' => count($result),
+            // ]);
         }
 
         return Inertia::render('Import/Preview', [
@@ -333,6 +353,18 @@ class ImportController extends Controller
             }
 
             $result[] = $item;
+            // $result[] = [
+            //     'no_urut' => count($result) + 1, // 🔥 increment
+            //     ...$item
+            // ];
+
+            // dd([
+            //     'headers' => $headers,
+            //     'sample_assoc' => $assocRow,
+            //     'mapping' => $mapping,
+            //     'sample_item' => $item
+            // ]);
+
         }
 
         // 🔥 SIMPAN DI SESSION supaya GET preview aman saat refresh
@@ -424,4 +456,255 @@ class ImportController extends Controller
     //         'dbColumns' => $dbColumns
     //     ]);
     // }
+
+    // public function scanRawExcel(Request $request)
+    // {
+    //     // 0. Naikkan Limit Memori & Waktu (Penting untuk ribuan baris)
+    //     ini_set('memory_limit', '1024M');
+    //     set_time_limit(300);
+
+    //     // 1. Proteksi Auth
+    //     if (!Auth::check()) {
+    //         return back()->withErrors(['message' => 'Sesi berakhir, silakan login ulang.']);
+    //     }
+
+    //     $filePath = $request->filePath;
+    //     if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+    //         return back()->withErrors(['message' => 'File tidak ditemukan!']);
+    //     }
+
+    //     $fullPath = Storage::disk('public')->path($filePath);
+
+    //     try {
+    //         // 2. Baca Excel ke Array
+    //         $sheets = Excel::toArray([], $fullPath);
+    //         $rows = $sheets[0] ?? [];
+
+    //         if (empty($rows)) {
+    //             return back()->withErrors(['message' => 'File Excel kosong!']);
+    //         }
+
+    //         // 3. SNIFFER: Cari Baris Header (Mencari teks 'namabarang' atau 'netto')
+    //         $headerIndex = collect($rows)->search(function ($row) {
+    //             $searchable = collect($row)->map(fn($v) => strtolower(trim($v)));
+    //             return $searchable->contains('namabarang') ||
+    //                 $searchable->contains('nama barang') ||
+    //                 $searchable->contains('netto');
+    //         });
+
+    //         // Default ke baris 3 (index 2) kalau tidak ketemu
+    //         $headerIndex = ($headerIndex !== false) ? $headerIndex : 2;
+    //         $headerRow = array_map('trim', $rows[$headerIndex]);
+
+    //         // 4. PARSER: Mapping Data Secara Aman
+    //         $allData = collect($rows)
+    //             ->slice($headerIndex + 1)
+    //             ->map(function ($row, $rowIndex) use ($headerRow) {
+    //                 $finalRow = [];
+
+    //                 foreach ($headerRow as $keyIndex => $headerName) {
+    //                     // Beri nama unik jika header kosong untuk menghindari error JSON
+    //                     $key = !empty($headerName) ? $headerName : "kolom_" . $keyIndex;
+    //                     $value = $row[$keyIndex] ?? null;
+
+    //                     $lowKey = strtolower($key);
+
+    //                     // A. Konversi Tanggal (Format Excel 46112 -> YYYY-MM-DD)
+    //                     if (str_contains($lowKey, 'tanggal') && is_numeric($value)) {
+    //                         try {
+    //                             $value = Date::excelToDateTimeObject($value)->format('Y-m-d');
+    //                         } catch (\Exception $e) {
+    //                             // Biarkan value apa adanya jika gagal konversi
+    //                         }
+    //                     }
+
+    //                     // B. Konversi Angka (Netto, Qty, Harga, dll)
+    //                     if (in_array($lowKey, ['netto', 'qty', 'harga', 'bruto', 'totqty'])) {
+    //                         // Bersihkan pemisah ribuan (titik/koma)
+    //                         $cleanValue = preg_replace('/[^0-9.]/', '', str_replace(',', '.', $value));
+    //                         $value = is_numeric($cleanValue) ? (float) $cleanValue : 0;
+    //                     }
+
+    //                     $finalRow[$key] = $value;
+    //                 }
+    //                 return $finalRow;
+    //             })
+    //             ->filter(fn($item) => !empty(array_filter($item))) // Buang baris kosong
+    //             ->values();
+
+    //         // 5. CACHING: Simpan Data Per User
+    //         $cacheKey = 'excel_import_' . Auth::id();
+    //         Cache::put($cacheKey, $allData, 600); // Simpan selama 10 menit
+
+    //         // 6. FINAL RESPONSE: Kirim JSON ke Inertia
+    //         return back()->with('excelData', [
+    //             'preview'    => $allData->take(100), // Preview 100 baris saja biar browser enteng
+    //             'total_rows' => $allData->count(),
+    //             'headers'    => $headerRow,
+    //             'cacheKey'   => $cacheKey
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         // Jika error, kirim pesan error asli ke session agar muncul di Vue
+    //         return back()->withErrors(['message' => 'Gagal Parser: ' . $e->getMessage()]);
+    //     }
+    // }
+
+    // use Maatwebsite\Excel\Facades\Excel;
+    // use Carbon\Carbon;
+
+    // public function scanRawExcel(Request $request)
+    // {
+    //     $filePath = $request->input('filePath'); // ✅ FIX
+
+    //     // 1. Validasi file
+    //     if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'File tidak ditemukan',
+    //             'filePath' => $filePath
+    //         ], 404);
+    //     }
+
+    //     $fullPath = Storage::disk('public')->path($filePath);
+
+    //     try {
+    //         // 2. Ambil data excel
+    //         $rows = Excel::toArray([], $fullPath)[0] ?? [];
+
+    //         if (empty($rows)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Excel kosong'
+    //             ], 400);
+    //         }
+
+    //         // 3. Cari header otomatis
+    //         $headerRow = null;
+    //         $headerIndex = 0;
+
+    //         foreach ($rows as $index => $row) {
+    //             $filled = array_filter($row, fn($v) => $v !== null && $v !== '');
+    //             if (count($filled) > 3) {
+    //                 $headerRow = $row;
+    //                 $headerIndex = $index;
+    //                 break;
+    //             }
+    //         }
+
+    //         if (!$headerRow) {
+    //             $headerRow = $rows[0];
+    //         }
+
+    //         // 4. Normalisasi header
+    //         $headers = [];
+    //         $used = [];
+
+    //         foreach ($headerRow as $col) {
+    //             $key = $col
+    //                 ? strtolower(trim(str_replace([' ', '.', '/'], '_', $col)))
+    //                 : 'kolom_' . uniqid();
+
+    //             if (in_array($key, $used)) {
+    //                 $key .= '_2';
+    //             }
+
+    //             $used[] = $key;
+    //             $headers[] = $key;
+    //         }
+
+    //         // 5. Mapping data
+    //         $result = [];
+
+    //         foreach (array_slice($rows, $headerIndex + 1) as $row) {
+    //             if (empty(array_filter($row, fn($v) => $v !== null && $v !== ''))) {
+    //                 continue;
+    //             }
+
+    //             $item = [];
+
+    //             foreach ($headers as $i => $key) {
+    //                 $val = $row[$i] ?? null;
+
+    //                 // Convert Excel Date
+    //                 if (is_numeric($val) && str_contains($key, 'tanggal')) {
+    //                     try {
+    //                         $val = Carbon::instance(
+    //                             \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($val)
+    //                         )->format('Y-m-d');
+    //                     } catch (\Exception $e) {
+    //                     }
+    //                 }
+
+    //                 $item[$key] = $val;
+    //             }
+
+    //             $result[] = $item;
+    //         }
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'headers' => $headers,
+    //             'total' => count($result),
+    //             'data' => $result
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function scanRawExcel(Request $request)
+    {
+        $filePath = $request->filePath;
+        $fullPath = storage_path('app/public/' . $filePath);
+
+        if (!file_exists($fullPath)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'File tidak ditemukan'
+            ], 404);
+        }
+
+        $rows = Excel::toArray([], $fullPath)[0] ?? [];
+
+        if (empty($rows)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Excel kosong'
+            ], 400);
+        }
+
+        // =========================
+        // 1. AMBIL HEADER (baris pertama)
+        // =========================
+        $headers = array_map(function ($h) {
+            return trim($h);
+        }, array_shift($rows));
+
+        // =========================
+        // 2. KONVERSI DATA JADI ASSOC
+        // =========================
+        $data = [];
+
+        foreach ($rows as $row) {
+            $temp = [];
+
+            foreach ($headers as $i => $header) {
+                $key = $header ?: "column_" . $i; // fallback kalau kosong
+
+                $temp[$key] = $row[$i] ?? null;
+            }
+
+            $data[] = $temp;
+        }
+
+        return response()->json([
+            'status' => true,
+            'headers' => $headers,
+            'data' => $data,
+            'total' => count($data)
+        ]);
+    }
 }

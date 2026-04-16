@@ -1,0 +1,383 @@
+import pandas as pd
+import numpy as np
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+from google.colab import files
+import json
+
+# Global state agar data tetap tersimpan saat pindah-pindah fungsi
+yuri_engine = {
+    'df': None,
+    'widgets': {},
+    # HEADER PERSIS SESUAI PERMINTAAN TERBARU
+    'fields': [
+        'Nama Agen', 'Kode Customer', 'Nama Customer', 'Alamat Customer',
+        'Nomor Telepon/HP Customer', 'Invoice Nomor Agen', 'Tanggal Invoice',
+        'Tipe Customer', 'Sales', 'SKU Kode Agen', 'Nama SKU', 'Qty Terjual (PCS)',
+        '% Diskon 1 (Reguler)', '% Diskon 2 (Cash)', '% Diskon 3 (DC Free)',
+        '% Diskon 4 (Promo 1)', '% Diskon 5 (Promo 2)', '% Diskon 6 (Rp)',
+        'Quantity Bonus', 'Rafraksi', 'Total Invoice Value'
+    ]
+}
+
+def start_yuri_v14_final_stable():
+    clear_output()
+    print("🚀 YURI AGENT MANAGEMENT - V14.2 (EXACT TEMPLATE)")
+    print("-----------------------------------------------------------")
+
+    uploaded = files.upload()
+    if not uploaded: return
+    fname = list(uploaded.keys())[0]
+    xl = pd.ExcelFile(fname)
+
+    # UI Atas (Control Panel)
+    sheet_dd = widgets.Dropdown(options=xl.sheet_names, description='Sheet:')
+    btn_scan = widgets.Button(description="1. SCAN EXCEL", button_style='info')
+    btn_export = widgets.Button(description="🚀 DOWNLOAD CSV", button_style='success', layout={'width':'200px'})
+    
+    display(widgets.HBox([sheet_dd, btn_scan, btn_export]))
+    out_status = widgets.Output()
+    out_mapping = widgets.Output()
+    display(out_status, out_mapping)
+
+    def process_scan(b):
+        with out_mapping:
+            clear_output()
+            with out_status: clear_output(); print("⌛ Menganalisa struktur kolom...")
+            try:
+                raw = pd.read_excel(fname, sheet_name=sheet_dd.value, header=None, nrows=60)
+                
+                # Cari Baris Header Utama
+                keywords = ['KODE', 'NAMA', 'QTY', 'HARGA', 'TOTAL', 'INVOICE', 'SKU', 'CUSTOMER', 'KUANTITAS', 'DISKON']
+                h_idx = 0
+                max_score = 0
+                for i, row in raw.iterrows():
+                    row_str = " ".join([str(v).upper() for v in row.values if pd.notnull(v)])
+                    score = sum(1 for k in keywords if k in row_str)
+                    if score > max_score: max_score, h_idx = score, i
+
+                # Logika Gabung Header
+                row_top = raw.iloc[h_idx].copy().ffill()
+                row_bottom = raw.iloc[h_idx+1].copy()
+                
+                final_headers = []
+                for idx in range(len(row_top)):
+                    v_top = str(row_top.iloc[idx]).strip() if pd.notnull(row_top.iloc[idx]) else ""
+                    v_bot = str(row_bottom.iloc[idx]).strip() if pd.notnull(row_bottom.iloc[idx]) else ""
+                    if v_top.lower() == 'nan': v_top = ""
+                    if v_bot.lower() == 'nan': v_bot = ""
+                    
+                    if v_top and v_bot and v_top != v_bot:
+                        name = f"{v_top} {v_bot}"
+                    else:
+                        name = v_top or v_bot or f"KOLOM_{idx}"
+                    final_headers.append(name.replace('\n', ' ').strip())
+
+                # Ambil Data
+                check_data = pd.to_numeric(raw.iloc[h_idx+1], errors='coerce').notnull().sum()
+                skip = h_idx + 2 if check_data < 2 else h_idx + 1
+                
+                yuri_engine['df'] = pd.read_excel(fname, sheet_name=sheet_dd.value, skiprows=skip, header=None)
+                yuri_engine['df'].columns = final_headers[:len(yuri_engine['df'].columns)]
+                cols = [c for c in yuri_engine['df'].columns if "KOLOM_" not in c]
+
+                # Tampilkan Tombol Save/Load JSON
+                ps_name = widgets.Text(placeholder='Nama Preset', layout={'width':'150px'})
+                btn_save = widgets.Button(description="SAVE JSON", button_style='warning')
+                btn_load = widgets.Button(description="LOAD JSON", button_style='primary')
+                display(widgets.HBox([ps_name, btn_save, btn_load]))
+                print("-" * 50)
+
+                # Render Dropdowns
+                yuri_engine['widgets'] = {}
+                list_dropdowns = []
+                for f in yuri_engine['fields']:
+                    w = widgets.Dropdown(options=['-- Kosongkan --'] + cols, value='-- Kosongkan --',
+                                         description=f'{f}:', layout={'width': '98%'}, style={'description_width': '180px'})
+                    
+                    # Auto Guess Logic
+                    low_f = f.lower()
+                    for c in cols:
+                        low_c = c.lower()
+                        # Match simple keywords atau match manual per kategori
+                        if low_f in low_c or low_c in low_f: w.value = c; break
+                        if 'diskon 1' in low_f and 'reguler' in low_c: w.value = c; break
+                        if 'diskon 2' in low_f and 'cash' in low_c: w.value = c; break
+                        if 'diskon 3' in low_f and 'dc' in low_c: w.value = c; break
+                        if 'qty' in low_f and ('qty' in low_c or 'pcs' in low_c): w.value = c; break
+                        if 'total' in low_f and ('total' in low_c or 'jumlah' in low_c): w.value = c; break
+                    
+                    yuri_engine['widgets'][f] = w
+                    list_dropdowns.append(w)
+                
+                display(widgets.VBox(list_dropdowns))
+
+                def on_save(b):
+                    curr = {k: v.value for k, v in yuri_engine['widgets'].items()}
+                    fname_js = f"{ps_name.value or 'map'}.json"
+                    with open(fname_js, 'w') as f: json.dump(curr, f)
+                    with out_status: print(f"💾 Tersimpan: {fname_js}")
+
+                def on_load(b):
+                    with out_status:
+                        print("📂 Pilih JSON..."); up = files.upload()
+                        if up:
+                            js = json.loads(list(up.values())[0])
+                            for f, v in js.items():
+                                if f in yuri_engine['widgets'] and v in yuri_engine['widgets'][f].options:
+                                    yuri_engine['widgets'][f].value = v
+                            print("✅ JSON Berhasil Di-load!")
+
+                btn_save.on_click(on_save)
+                btn_load.on_click(on_load)
+                with out_status: clear_output(); print("✅ Scan Selesai.")
+
+            except Exception as e:
+                with out_status: print(f"❌ Error: {e}")
+
+    def process_export(b):
+        with out_status:
+            if yuri_engine['df'] is None: print("❌ Scan dulu!"); return
+            clear_output(); print("⌛ Memproses Merged Cells & Export...")
+            
+            # Mapping Kolom
+            f_map = {v.value: k for k, v in yuri_engine['widgets'].items() if v.value != '-- Kosongkan --'}
+            res = yuri_engine['df'].copy().rename(columns=f_map)
+            
+            # FITUR SMART FILL (Identitas Baris)
+            identitas = [
+                'Nama Agen', 'Kode Customer', 'Nama Customer', 'Alamat Customer', 
+                'Nomor Telepon/HP Customer', 'Invoice Nomor Agen', 'Tanggal Invoice', 
+                'Tipe Customer', 'Sales'
+            ]
+            for c in identitas:
+                if c in res.columns:
+                    res[c] = res[c].ffill()
+            
+            # Pastikan kolom standar tersedia (Isi 0 untuk angka, kosong untuk teks)
+            for f in yuri_engine['fields']:
+                if f not in res.columns:
+                    is_numeric = any(x in f.lower() for x in ['qty', 'total', 'diskon', 'bonus', 'rafraksi'])
+                    res[f] = 0 if is_numeric else ""
+                else:
+                    if f not in identitas:
+                        res[f] = res[f].replace(np.nan, "")
+            
+            # Export sesuai urutan yuri_engine['fields']
+            final_df = res[yuri_engine['fields']]
+            final_df.to_csv('yuri_laravel_ready.csv', index=False)
+            
+            print("🎉 SELESAI! Header sudah sesuai permintaan.")
+            display(final_df.head(10))
+
+    btn_scan.on_click(process_scan)
+    btn_export.on_click(process_export)
+
+# Jalankan fungsi
+start_yuri_v14_final_stable()
+
+
+
+//////////// PROOOOO layout ///////////////////////////////////////////
+import pandas as pd
+import numpy as np
+import ipywidgets as widgets
+from IPython.display import display, clear_output
+from google.colab import files
+import json
+
+# Pastikan xlsxwriter terinstall
+try:
+    import xlsxwriter
+except ImportError:
+    !pip install xlsxwriter
+    import xlsxwriter
+
+# Global state
+yuri_engine = {
+    'df': None,
+    'widgets': {},
+    'fields': [
+        'Nama Agen', 'Kode Customer', 'Nama Customer', 'Alamat Customer',
+        'Nomor Telepon/HP Customer', 'Invoice Nomor Agen', 'Tanggal Invoice',
+        'Tipe Customer', 'Sales', 'SKU Kode Agen', 'Nama SKU', 'Qty Terjual (PCS)',
+        '% Diskon 1 (Reguler)', '% Diskon 2 (Cash)', '% Diskon 3 (DC Free)',
+        '% Diskon 4 (Promo 1)', '% Diskon 5 (Promo 2)', '% Diskon 6 (Rp)',
+        'Quantity Bonus', 'Rafraksi', 'Total Invoice Value'
+    ]
+}
+
+def start_yuri_v14_pro_layout():
+    clear_output()
+    print("🚀 YURI AGENT MANAGEMENT - V14.9 (PRO LAYOUT & CENTERED)")
+    print("-----------------------------------------------------------")
+
+    uploaded = files.upload()
+    if not uploaded: return
+    fname = list(uploaded.keys())[0]
+    xl = pd.ExcelFile(fname)
+
+    sheet_dd = widgets.Dropdown(options=xl.sheet_names, description='Sheet:')
+    btn_scan = widgets.Button(description="1. SCAN EXCEL", button_style='info')
+    btn_export_csv = widgets.Button(description="🚀 DOWNLOAD CSV", button_style='success', layout={'width':'200px'})
+    btn_export_excel = widgets.Button(description="📊 DOWNLOAD EXCEL (PRO)", button_style='primary', layout={'width':'250px'})
+    
+    display(widgets.HBox([sheet_dd, btn_scan]))
+    display(widgets.HBox([btn_export_csv, btn_export_excel]))
+    
+    out_status = widgets.Output()
+    out_mapping = widgets.Output()
+    display(out_status, out_mapping)
+
+    def process_scan(b):
+        with out_mapping:
+            clear_output()
+            with out_status: clear_output(); print("⌛ Menganalisa struktur kolom...")
+            try:
+                raw = pd.read_excel(fname, sheet_name=sheet_dd.value, header=None, nrows=60, dtype=str)
+                keywords = ['KODE', 'NAMA', 'QTY', 'HARGA', 'TOTAL', 'INVOICE', 'SKU', 'CUSTOMER', 'KUANTITAS', 'DISKON']
+                h_idx, max_score = 0, 0
+                for i, row in raw.iterrows():
+                    row_str = " ".join([str(v).upper() for v in row.values if pd.notnull(v)])
+                    score = sum(1 for k in keywords if k in row_str)
+                    if score > max_score: max_score, h_idx = score, i
+
+                row_top = raw.iloc[h_idx].copy().ffill()
+                row_bottom = raw.iloc[h_idx+1].copy()
+                final_headers = []
+                for idx in range(len(row_top)):
+                    v_top = str(row_top.iloc[idx]).strip() if pd.notnull(row_top.iloc[idx]) else ""
+                    v_bot = str(row_bottom.iloc[idx]).strip() if pd.notnull(row_bottom.iloc[idx]) else ""
+                    name = f"{v_top} {v_bot}" if v_top and v_bot and v_top != v_bot else (v_top or v_bot or f"KOLOM_{idx}")
+                    final_headers.append(name.replace('\n', ' ').strip().replace('nan', ''))
+
+                skip = h_idx + 1
+                yuri_engine['df'] = pd.read_excel(fname, sheet_name=sheet_dd.value, skiprows=skip, header=None, dtype=str)
+                yuri_engine['df'].columns = final_headers[:len(yuri_engine['df'].columns)]
+                cols = [c for c in yuri_engine['df'].columns if "KOLOM_" not in c]
+
+                ps_name = widgets.Text(placeholder='Nama Preset', layout={'width':'150px'})
+                btn_save = widgets.Button(description="SAVE JSON", button_style='warning')
+                btn_load = widgets.Button(description="LOAD JSON", button_style='primary')
+                display(widgets.HBox([ps_name, btn_save, btn_load]))
+
+                yuri_engine['widgets'] = {}
+                list_dropdowns = []
+                for f in yuri_engine['fields']:
+                    w = widgets.Dropdown(options=['-- Kosongkan --'] + cols, value='-- Kosongkan --',
+                                         description=f'{f}:', layout={'width': '98%'}, style={'description_width': '180px'})
+                    low_f = f.lower()
+                    for c in cols:
+                        low_c = c.lower()
+                        if low_f in low_c or low_c in low_f: w.value = c; break
+                    yuri_engine['widgets'][f] = w
+                    list_dropdowns.append(w)
+                display(widgets.VBox(list_dropdowns))
+
+                def on_save_clicked(b):
+                    mapping_data = {k: v.value for k, v in yuri_engine['widgets'].items()}
+                    filename = f"{ps_name.value or 'map'}.json"
+                    with open(filename, 'w') as f: json.dump(mapping_data, f)
+                    with out_status: print(f"💾 Tersimpan: {filename}")
+
+                def on_load_clicked(b):
+                    with out_status:
+                        up = files.upload()
+                        if up:
+                            js = json.loads(list(up.values())[0])
+                            for f, v in js.items():
+                                if f in yuri_engine['widgets'] and v in yuri_engine['widgets'][f].options:
+                                    yuri_engine['widgets'][f].value = v
+                            print("✅ Loaded!")
+
+                btn_save.on_click(on_save_clicked)
+                btn_load.on_click(on_load_clicked)
+                with out_status: clear_output(); print("✅ Scan Selesai.")
+            except Exception as e:
+                with out_status: print(f"❌ Error: {e}")
+
+    def prepare_data():
+        if yuri_engine['df'] is None: return None
+        f_map = {v.value: k for k, v in yuri_engine['widgets'].items() if v.value != '-- Kosongkan --'}
+        res = yuri_engine['df'].copy().rename(columns=f_map)
+        
+        identitas = ['Nama Agen', 'Kode Customer', 'Nama Customer', 'Alamat Customer', 'Nomor Telepon/HP Customer', 'Invoice Nomor Agen', 'Tanggal Invoice', 'Tipe Customer', 'Sales']
+        for c in identitas:
+            if c in res.columns: res[c] = res[c].ffill()
+        
+        for f in yuri_engine['fields']:
+            if f not in res.columns:
+                res[f] = 0 if any(x in f.lower() for x in ['qty', 'total', 'diskon', 'bonus', 'rafraksi']) else ""
+        
+        def format_angka_indo(val):
+            try:
+                if pd.isna(val) or val == "": return "0"
+                num = float(val)
+                formatted = "{:,.15g}".format(num)
+                return formatted.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+            except: return val
+
+        text_cols = ['SKU Kode Agen', 'Invoice Nomor Agen', 'Kode Customer', 'Nomor Telepon/HP Customer']
+        for f in yuri_engine['fields']:
+            if f in res.columns:
+                if f == 'Total Invoice Value' or any(x in f.lower() for x in ['diskon', 'rafraksi']):
+                    res[f] = res[f].apply(format_angka_indo)
+                elif f in text_cols:
+                    res[f] = res[f].astype(str).apply(lambda x: x.split('.')[0] if x.endswith('.0') else x)
+                    res[f] = res[f].replace('nan', '')
+        
+        return res[yuri_engine['fields']]
+
+    def process_export_csv(b):
+        final_df = prepare_data()
+        with out_status:
+            if final_df is None: print("❌ Scan dulu!"); return
+            clear_output(); print("⌛ Exporting CSV...")
+            final_df.to_csv('yuri_laravel_ready.csv', index=False, sep=',', encoding='utf-8')
+            print("🎉 CSV SELESAI!")
+            display(final_df.head(10))
+
+    def process_export_excel(b):
+        final_df = prepare_data()
+        with out_status:
+            if final_df is None: print("❌ Scan dulu!"); return
+            clear_output(); print("⌛ Formatting Pro Excel...")
+            output_file = 'yuri_pro_layout.xlsx'
+            writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
+            final_df.to_excel(writer, index=False, sheet_name='Data_Agen')
+            
+            workbook = writer.book
+            worksheet = writer.sheets['Data_Agen']
+            
+            # --- FORMAT DEFINITIONS ---
+            header_fmt = workbook.add_format({
+                'bold': True, 'align': 'center', 'valign': 'vcenter',
+                'bg_color': '#D9EAD3', 'border': 1
+            })
+            data_fmt = workbook.add_format({'valign': 'vcenter', 'border': 1})
+            text_fmt = workbook.add_format({'num_format': '@', 'valign': 'vcenter', 'border': 1})
+            
+            # Apply Header Format
+            for col_num, value in enumerate(final_df.columns.values):
+                worksheet.write(0, col_num, value, header_fmt)
+
+            # Apply Data Format & Auto-Fit
+            for i, col in enumerate(final_df.columns):
+                max_len = final_df[col].astype(str).str.len().max()
+                max_len = max(max_len, len(col)) + 3
+                
+                if any(x in col for x in ['SKU', 'Invoice', 'Kode', 'Telepon']):
+                    worksheet.set_column(i, i, max_len, text_fmt)
+                else:
+                    worksheet.set_column(i, i, max_len, data_fmt)
+            
+            worksheet.autofilter(0, 0, len(final_df), len(final_df.columns) - 1)
+            writer.close()
+            files.download(output_file)
+            print("🎉 EXCEL PRO SELESAI! (Header Center + Border + AutoFit)")
+
+    btn_scan.on_click(process_scan)
+    btn_export_csv.on_click(process_export_csv)
+    btn_export_excel.on_click(process_export_excel)
+
+start_yuri_v14_pro_layout()

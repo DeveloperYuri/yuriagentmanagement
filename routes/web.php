@@ -5,6 +5,7 @@ use App\Http\Controllers\AgentReportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryImportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -82,9 +83,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/import/preview', [ImportController::class, 'preview'])->name('import.preview');
 
     Route::post('/import/save-mapping', [ImportController::class, 'saveMapping'])
-    ->name('import.saveMapping');
+        ->name('import.saveMapping');
     Route::post('/mapping/reset', [ImportController::class, 'resetMapping'])
-    ->name('mapping.reset');
+        ->name('mapping.reset');
+
+    Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name('import.scanRawExcel');
+
+    Route::post('/python/scan', [PythonController::class, 'scan']);
+    Route::post('/python/process', [PythonController::class, 'process']);
+    Route::get('/yuri-engine', function () {
+        return Inertia::render('Python/Index');
+        // Laravel akan mencari di resources/js/Pages/Python/Index.vue
+    });
+
+    Route::post('/python/save-mapping', [PythonController::class, 'saveMapping']);
+    Route::get('/python/get-mappings', [PythonController::class, 'getMappings']);
+    Route::get('/mapping', [PythonController::class, 'mapping'])
+        ->name('python.mapping');
+
+
+    // Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name(import.scanRawExcel);
 
 });
 
