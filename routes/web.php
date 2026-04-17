@@ -82,15 +82,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/import/process', [ImportController::class, 'process'])->name('import.process');
     Route::get('/import/preview', [ImportController::class, 'preview'])->name('import.preview');
 
-    Route::post('/import/save-mapping', [ImportController::class, 'saveMapping'])
-        ->name('import.saveMapping');
+    // Route::post('/import/save-mapping', [ImportController::class, 'saveMapping'])
+    //     ->name('import.saveMapping');
     Route::post('/mapping/reset', [ImportController::class, 'resetMapping'])
         ->name('mapping.reset');
 
     Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name('import.scanRawExcel');
 
     Route::post('/python/scan', [PythonController::class, 'scan']);
-    Route::post('/python/process', [PythonController::class, 'process']);
+    // Route::post('/python/process', [PythonController::class, 'process']);
+    // Route::post('/python/process', function () {
+    //     return response()->json([
+    //         'status' => 'OK',
+    //         'message' => 'ROUTE KENA'
+    //     ]);
+    // });
+    // routes/web.php
     Route::get('/yuri-engine', function () {
         return Inertia::render('Python/Index');
         // Laravel akan mencari di resources/js/Pages/Python/Index.vue
@@ -101,9 +108,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/mapping', [PythonController::class, 'mapping'])
         ->name('python.mapping');
 
+    Route::post('/mapping/save', [PythonController::class, 'saveMapping']);
+
+    Route::post('/python/exportexcel', [PythonController::class, 'exportexcel'])
+        ->name('python.exportexcel');
+
+    //     Route::post('/python/exportexcel', function () {
+    //     return response()->json([
+    //         'status' => 'OK',
+    //         'message' => 'ROUTE KENA'
+    //     ]);
+    // });
+
 
     // Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name(import.scanRawExcel);
 
 });
+
+Route::post('/python/process', [PythonController::class, 'process']);
+
 
 require __DIR__ . '/auth.php';

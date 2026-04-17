@@ -15,42 +15,6 @@ const scanExcel = (report) => {
     });
 };
 
-// const scanExcel = async (report) => {
-//     try {
-//         const res = await axios.post("/python/scan", {
-//             file_path: report.file_path,
-//         });
-
-//         // 🔥 pindah ke halaman mapping
-//         router.get(route("python.mapping"), {
-//             file_path: report.file_path,
-//             headers: JSON.stringify(res.data.headers),
-//         });
-//     } catch (err) {
-//         console.error(err);
-//         alert("Scan gagal");
-//     }
-// };
-
-// const scanExcel = async (report) => {
-//     try {
-//         const res = await axios.post("http://localhost:8000/python/scan", {
-//             file_path: report.file_path,
-//         });
-
-//         console.log("Hasil scan:", res.data);
-
-//         alert("Scan berhasil!");
-
-//         // optional update UI
-//         // emit("refresh") atau reload data
-//         // window.location.reload();
-//     } catch (err) {
-//         console.error("ERROR SCAN:", err.response?.data || err);
-//         alert(err.response?.data?.message || "Scan gagal");
-//     }
-// };
-
 const userRole = computed(() => {
     // Ambil string role pertama, jika tidak ada default ke string kosong
     const role =
@@ -245,114 +209,123 @@ const resetMapping = (report) => {
     );
 };
 
-// const scannedData = ref([]);
-// const scannedHeaders = ref([]);
-// const showScanModal = ref(false);
+// const page = usePage();
 
-// const scanExcel = async (report) => {
-//     // 1. Validasi file
-//     if (!report || !report.file_path) {
-//         alert("File tidak ditemukan");
-//         return;
-//     }
+const filePath = computed(() => page.props.filePath);
+const agent_id = computed(() => page.props.agent_id);
+const report_id = computed(() => page.props.report_id);
+const selectedSheetName = ref("");
 
-//     isLoading.value = true;
-//     statusMsg.value = `Menscan file: ${report.file_name}...`;
+const processExport = async (report) => {
+    try {
+        console.log("REPORT:", report);
+        console.log("SHEET:", report.sheet_name);
 
+        const res = await axios.post(
+            "/python/exportexcel",
+            {
+                file_path: report.file_path,
+                agent_id: report.user_id,
+                agent_report_id: report.id,
+                sheet: report.sheet_name,
+            },
+            {
+                responseType: "blob",
+            },
+        );
+
+        // 🔍 Cek apakah response JSON (error) atau file
+        const contentType = res.headers["content-type"];
+
+        if (contentType && contentType.includes("application/json")) {
+            // ❌ Ini error dari backend
+            const text = await res.data.text();
+            const json = JSON.parse(text);
+
+            console.error("ERROR BACKEND:", json);
+            alert(json.message || "Terjadi error");
+
+            return;
+        }
+
+        // ✅ Ini file Excel → download
+        const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `RESULT_YURI_${Date.now()}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.log("ERROR FULL:", err);
+
+        // 🔥 Tangkap error dari backend (yang return JSON tapi kebungkus blob)
+        if (err.response && err.response.data) {
+            try {
+                const text = await err.response.data.text();
+                const json = JSON.parse(text);
+
+                console.error("ERROR JSON:", json);
+                alert(json.message || "Export gagal");
+            } catch {
+                alert("Terjadi error tidak dikenal");
+            }
+        } else {
+            alert("Server tidak merespon");
+        }
+    }
+};
+
+// const processExport = async (report) => {
 //     try {
-//         // 2. Request ke backend untuk ambil Header
-//         const res = await axios.post("/python/scan", {
-//             file_path: report.file_path // Kirim path file yang sudah ada di server
+//         const res = await axios.post("/python/exportexcel", {
+//             file_path: report.file_path,
+//             agent_id: report.user_id,
+//             agent_report_id: report.id,
 //         });
 
-//         if (res.data.status === "success") {
-//             const serverHeaders = res.data.headers;
-//             headers.value = serverHeaders;
-
-//             // 3. JALANKAN AUTO-MAPPING OTOMATIS
-//             const autoMappingResult = {};
-
-//             targetFields.forEach((target) => {
-//                 // Logika pencocokan string (Fuzzy Match sederhana)
-//                 const match = serverHeaders.find((h) => {
-//                     const cleanHeader = h.toLowerCase().replace(/[^a-z0-9]/g, "");
-//                     const cleanTarget = target.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-//                     // Cek apakah ada kata yang mengandung satu sama lain
-//                     return cleanHeader.includes(cleanTarget) || cleanTarget.includes(cleanHeader);
-//                 });
-
-//                 if (match) {
-//                     autoMappingResult[target] = match;
-//                 } else {
-//                     autoMappingResult[target] = ""; // Tetap kosong jika tidak yakin
-//                 }
-//             });
-
-//             // 4. Masukkan hasil ke form (Reaktif)
-//             form.mapping = autoMappingResult;
-
-//             // Scroll otomatis ke area mapping agar user tahu sudah muncul
-//             setTimeout(() => {
-//                 document.getElementById('mapping-section')?.scrollIntoView({ behavior: 'smooth' });
-//             }, 100);
-
-//             statusMsg.value = "✅ Scan selesai! Mapping telah diisi otomatis.";
-//             isError.value = false;
-//         }
+//         console.log("RESPONSE:", res.data);
+//         alert("Route kena: " + res.data.message);
 //     } catch (err) {
-//         console.error(err);
-//         isError.value = true;
-//         statusMsg.value = "❌ Gagal menscan data.";
-//     } finally {
-//         isLoading.value = false;
+//         console.error("ERROR:", err.response?.data || err.message);
 //     }
 // };
 
-// const scanExcel = async (report) => {
-//     if (!report.file_path) {
-//         toast.error("File tidak ditemukan");
-//         return;
-//     }
-
+// const processExport = async (report) => {
 //     try {
-//         const res = await axios.get(route("import.scanRawExcel"), {
-//             params: {
-//                 filePath: report.file_path,
+//         const res = await axios.post(
+//             "/python/exportexcel",
+//             {
+//                 file_path: report.file_path,
+//                 agent_id: report.user_id,
+//                 agent_report_id: report.id,
 //             },
-//         });
+//             {
+//                 responseType: "blob",
+//             },
+//         );
 
-//         scannedData.value = res.data.data;
-//         scannedHeaders.value = res.data.headers;
-//         showScanModal.value = true;
-//     } catch (e) {
-//         console.error(e);
-//         toast.error("Gagal scan");
+//         const url = window.URL.createObjectURL(new Blob([res.data]));
+//         const link = document.createElement("a");
+//         link.href = url;
+//         link.download = "RESULT_YURI.xlsx";
+//         link.click();
+//     } catch (err) {
+//         console.log("ERROR FULL:", err);
+
+//         if (err.response && err.response.data) {
+//             err.response.data.text().then((text) => {
+//                 console.log("ERROR JSON:", text);
+//             });
+//         }
 //     }
-// };
-
-// const scanExcel = (report) => {
-//     if (!report.file_path) {
-//         toast.error("File tidak ditemukan");
-//         return;
-//     }
-
-//     // Mengarahkan ke route scan-excel dengan parameter filePath
-//     router.get(route("import.scanRawExcel"), {
-//         filePath: report.file_path,
-//         agent_id: report.user_id,
-//     });
-// };
-
-// const goToMapping = (report) => {
-//     if (!report.file_path) {
-//         toast.error("File tidak ditemukan");
-//         return;
-//     }
-
-//     router.get(route("import.mapping"), {
-//         filePath: report.file_path,
-//     });
 // };
 </script>
 
@@ -472,12 +445,12 @@ const resetMapping = (report) => {
                                         Download
                                     </button>
 
-                                    <button
+                                    <!-- <button
                                         @click="goToMapping(report)"
                                         class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-md font-bold text-[11px] hover:bg-green-600 hover:text-white transition-all duration-200"
                                     >
                                         Import
-                                    </button>
+                                    </button> -->
 
                                     <button
                                         @click="resetMapping(report)"
@@ -505,6 +478,28 @@ const resetMapping = (report) => {
                                             />
                                         </svg>
                                         Set Mapping
+                                    </button>
+
+                                    <button
+                                        @click="processExport(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-md font-bold text-[11px] hover:bg-green-600 hover:text-white transition-all duration-200"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-3.5 w-3.5 mr-1"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                            />
+                                        </svg>
+
+                                        Export Excel
                                     </button>
 
                                     <template v-if="canManageReport">

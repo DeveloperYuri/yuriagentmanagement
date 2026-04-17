@@ -48,52 +48,21 @@ def scan_file(file_path):
     except Exception as e:
         print(json.dumps({"status": "error", "message": str(e)}))
 
-# def scan_file(file_path):
-#     try:
-#         # Load raw data tanpa header dulu untuk cari posisi header asli
-#         raw = pd.read_excel(file_path, header=None, nrows=60, dtype=str)
-        
-#         # Logika Scoring Header dari Colab
-#         keywords = ['KODE', 'NAMA', 'QTY', 'HARGA', 'TOTAL', 'INVOICE', 'SKU', 'CUSTOMER', 'KUANTITAS', 'DISKON']
-#         h_idx, max_score = 0, 0
-        
-#         for i, row in raw.iterrows():
-#             row_str = " ".join([str(v).upper() for v in row.values if pd.notnull(v)])
-#             score = sum(1 for k in keywords if k in row_str)
-#             if score > max_score:
-#                 max_score, h_idx = score, i
-
-#         # Logika Penggabungan Header Multi-line (ffill)
-#         row_top = raw.iloc[h_idx].copy().ffill()
-#         row_bottom = raw.iloc[h_idx+1].copy()
-        
-#         final_headers = []
-#         for idx in range(len(row_top)):
-#             v_top = str(row_top.iloc[idx]).strip() if pd.notnull(row_top.iloc[idx]) else ""
-#             v_bot = str(row_bottom.iloc[idx]).strip() if pd.notnull(row_bottom.iloc[idx]) else ""
-            
-#             # Gabungkan jika ada baris bawah, jika sama jangan didouble
-#             name = f"{v_top} {v_bot}" if v_top and v_bot and v_top != v_bot else (v_top or v_bot or f"KOLOM_{idx}")
-#             final_headers.append(name.replace('\n', ' ').strip().replace('nan', ''))
-
-#         # Bersihkan header dari Unnamed atau KOLOM_ yang tidak perlu
-#         clean_headers = [h for h in final_headers if h and "KOLOM_" not in h]
-        
-#         print(json.dumps({
-#             "status": "success",
-#             "headers": clean_headers,
-#             "header_row_index": int(h_idx) # Simpan index ini untuk proses export nanti
-#         }))
-#     except Exception as e:
-#         print(json.dumps({"status": "error", "message": str(e)}))
-
-def export_file(input_path, mapping_json, output_path):
+def export_file(input_path, mapping_json, sheet_name, output_path):
     try:
         import numpy as np
         mapping = json.loads(mapping_json)
         
         # 1. BACA SELURUH FILE MENTAH
-        df_raw = pd.read_excel(input_path, header=None, dtype=str)
+        # df_raw = pd.read_excel(input_path, header=None, dtype=str)
+
+        # 1. BACA SESUAI SHEET YANG DIPILIH
+        xls = pd.ExcelFile(input_path)
+
+        if sheet_name not in xls.sheet_names:
+            raise Exception(f"Sheet '{sheet_name}' tidak ditemukan. Available: {xls.sheet_names}")
+
+        df_raw = pd.read_excel(xls, sheet_name=sheet_name, header=None, dtype=str)
         
         # 2. CARI BARIS HEADER (Scoring System)
         keywords = ['KODE', 'NAMA', 'QTY', 'HARGA', 'TOTAL', 'INVOICE', 'SKU', 'CUSTOMER', 'UNIT', 'JUMLAH']
@@ -138,6 +107,9 @@ def export_file(input_path, mapping_json, output_path):
         # Balik mapping: {Nama_Kolom_Excel: Field_Target}
         f_map = {v: k for k, v in mapping.items() if v != '-- Kosongkan --'}
         res = df.rename(columns=f_map)
+
+        if 'Nama Agen' in mapping:
+            res['Nama Agen'] = mapping['Nama Agen']
 
         # 5. FORWARD FILL (ffill) UNTUK KOLOM IDENTITAS
         # Penting: Ubah string kosong menjadi NaN agar ffill jalan
@@ -198,10 +170,10 @@ def export_file(input_path, mapping_json, output_path):
 
         # 8. WRITE TO EXCEL (PRO LAYOUT)
         writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
-        res[target_fields].to_excel(writer, index=False, sheet_name='Data_Agen')
+        res[target_fields].to_excel(writer, index=False, sheet_name='Sales_Report')
         
         workbook = writer.book
-        worksheet = writer.sheets['Data_Agen']
+        worksheet = writer.sheets['Sales_Report']
         
         # Style
         header_fmt = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter', 'bg_color': '#D9EAD3', 'border': 1})
@@ -227,4 +199,6 @@ if __name__ == "__main__":
     if mode == "scan":
         scan_file(sys.argv[2])
     elif mode == "export":
-        export_file(sys.argv[2], sys.argv[3], sys.argv[4])
+        export_file(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
+        
