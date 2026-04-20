@@ -4,6 +4,8 @@ use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AgentReportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryImportController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ItemGroupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
@@ -13,15 +15,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
 
 Route::get('/', function () {
     // Cek apakah user sudah login atau belum
@@ -71,13 +64,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/users/{user}/assign-supervisor', [UserController::class, 'assignSupervisor'])
         ->name('users.assign-supervisor');
 
-    // web.php
-    // Route::controller(InventoryImportController::class)->group(function () {
-    //     Route::get('/inventory/import', 'index')->name('import.index');
-    //     Route::post('/inventory/import/upload', 'upload')->name('import.upload');
-    //     Route::post('/inventory/import/process', 'process')->name('import.process');
-    // });
-
     Route::get('/import/mapping', [ImportController::class, 'mapping'])->name('import.mapping');
     Route::post('/import/process', [ImportController::class, 'process'])->name('import.process');
     Route::get('/import/preview', [ImportController::class, 'preview'])->name('import.preview');
@@ -90,17 +76,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name('import.scanRawExcel');
 
     Route::post('/python/scan', [PythonController::class, 'scan']);
-    // Route::post('/python/process', [PythonController::class, 'process']);
-    // Route::post('/python/process', function () {
-    //     return response()->json([
-    //         'status' => 'OK',
-    //         'message' => 'ROUTE KENA'
-    //     ]);
-    // });
-    // routes/web.php
+
     Route::get('/yuri-engine', function () {
         return Inertia::render('Python/Index');
-        // Laravel akan mencari di resources/js/Pages/Python/Index.vue
     });
 
     Route::post('/python/save-mapping', [PythonController::class, 'saveMapping']);
@@ -113,16 +91,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/python/exportexcel', [PythonController::class, 'exportexcel'])
         ->name('python.exportexcel');
 
-    //     Route::post('/python/exportexcel', function () {
-    //     return response()->json([
-    //         'status' => 'OK',
-    //         'message' => 'ROUTE KENA'
-    //     ]);
-    // });
-
-
-    // Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name(import.scanRawExcel);
-
+    Route::resource('items', ItemController::class);
+    Route::resource('itemsgroups', ItemGroupController::class);
+    Route::post('/items/import', [ItemController::class, 'import'])->name('items.import');
 });
 
 Route::post('/python/process', [PythonController::class, 'process']);

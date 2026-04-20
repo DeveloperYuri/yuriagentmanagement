@@ -33,7 +33,9 @@ onMounted(() => {
     if (
         route().current("roles.*") ||
         route().current("regional.*") ||
-        route().current("users.*") // Tambahkan ini
+        route().current("users.*") ||
+        route().current("items.*") ||        
+        route().current("itemsgroups.*") 
     ) {
         isSettingsOpen.value = true;
     }
@@ -265,6 +267,30 @@ const toggleSettings = () => {
                             class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
                         >
                             Regional
+                        </Link>
+
+                        <Link
+                            :href="route('items.index')"
+                            :class="
+                                route().current('items.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Item Produk
+                        </Link>
+
+                        <Link
+                            :href="route('itemsgroups.index')"
+                            :class="
+                                route().current('itemsgroups.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Item Group
                         </Link>
 
                         <Link
