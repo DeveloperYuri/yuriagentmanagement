@@ -86,6 +86,8 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { usePage, Head } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { useToast } from "vue-toastification";
+
 
 // =====================
 // INERTIA PROPS
@@ -103,6 +105,7 @@ const sheets = ref([]);
 const headers = ref([]);
 const selectedSheetName = ref(null);
 const mapping = ref({});
+const toast = useToast();
 
 // TARGET FIELD
 const targetFields = [
@@ -240,7 +243,9 @@ const saveMapping = async () => {
             agent_id: page.props.agent_id,
         });
 
-        alert("Mapping berhasil disimpan!");
+        // alert("Mapping berhasil disimpan!");
+        toast.success("Mapping berhasil di simpan");
+
     } catch (err) {
         console.error("ERROR SAVE MAPPING:", err.response?.data || err);
         alert(err.response?.data?.message || "Gagal simpan mapping");

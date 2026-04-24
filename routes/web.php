@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AgentReportController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryImportController;
 use App\Http\Controllers\ItemController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -70,8 +72,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Route::post('/import/save-mapping', [ImportController::class, 'saveMapping'])
     //     ->name('import.saveMapping');
-    Route::post('/mapping/reset', [ImportController::class, 'resetMapping'])
-        ->name('mapping.reset');
+    // Route::post('/mapping/reset', [ImportController::class, 'resetMapping'])
+    //     ->name('mapping.reset');
 
     Route::get('/scan-excel', [ImportController::class, 'scanRawExcel'])->name('import.scanRawExcel');
 
@@ -91,10 +93,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/python/exportexcel', [PythonController::class, 'exportexcel'])
         ->name('python.exportexcel');
 
+    // Route::delete('/resetmapping/{id}', [PythonController::class, 'destroy']);
+
+    Route::delete('/resetmapping/{id}', [PythonController::class, 'destroy']);
+    Route::get('/mapping-multi', [PythonController::class, 'mappingMulti'])
+        ->name('import.mapping.multi');
+    Route::post('/python/compare-master', [PythonController::class, 'compareMaster']);
+    Route::post('/python/process-multi', [PythonController::class, 'processMulti']);
+
+    // Route::get('/python/mapping-export', [PythonController::class, 'mappingExport'])->name('exportmappingmulti');
+
+    Route::get('/python/export-mapping', [PythonController::class, 'exportMappingPage'])
+        ->name('exportmappingmulti');
+
+    Route::post('/python/mapping-exportscan', [PythonController::class, 'mappingExportscanExcel'])
+        ->name('python.mappingExportscan');
+
+    Route::post('/python/mapping-export', [PythonController::class, 'mappingExport'])
+        ->name('python.mapping-export');
+
+
+    Route::post('/export/process', [ExportController::class, 'process']);
+    Route::get('/export-mapping', [ExportController::class, 'exportMappingPage']);
+    Route::post('/python/scan-file', [ExportController::class, 'scanFile']);
+    Route::post('/python/scan-header', [ExportController::class, 'scanHeader']); // BARIS INI YANG KURANG
+
     Route::resource('items', ItemController::class);
     Route::resource('itemsgroups', ItemGroupController::class);
     Route::post('/items/import', [ItemController::class, 'import'])->name('items.import');
 });
+
+
+// Route::post('/python/scan-file', function () {
+//     return response()->json([
+//         'file_path' => 'MASUK ROUTE',
+//         'sheets' => ['Sheet1', 'Sheet2']
+//     ]);
+// });
+
 
 Route::post('/python/process', [PythonController::class, 'process']);
 

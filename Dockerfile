@@ -1,14 +1,5 @@
 FROM php:8.2-fpm
 
-# Install dependencies sistem & tools
-# RUN apt-get update && apt-get install -y \
-#     libpq-dev \
-#     libpng-dev \
-#     zip \
-#     unzip \
-#     git \
-#     curl \
-#     gnupg
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libpng-dev \
@@ -18,10 +9,6 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     gnupg \
-    # Tambahan python3 dan pip di sini
-    # python3 \
-    # python3-pip \
-    # python3-dev \
     python3 \
     python3-pandas \
     python3-numpy \
@@ -29,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     python3-xlsxwriter \
     && docker-php-ext-configure zip \
     && docker-php-ext-install pdo pdo_pgsql gd zip \
+    && pip install thefuzz python-Levenshtein --break-system-packages \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # --- TAMBAHKAN NODE.JS DI SINI ---

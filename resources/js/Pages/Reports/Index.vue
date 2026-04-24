@@ -8,6 +8,8 @@ import axios from "axios";
 
 const page = usePage();
 const showScanModal = ref(false);
+const showResetModal = ref(false);
+const reportToReset = ref(null);
 
 const scanExcel = (report) => {
     router.get(route("python.mapping"), {
@@ -190,26 +192,55 @@ const goToMapping = (report) => {
     // });
 };
 
-const resetMapping = (report) => {
-    if (!confirm("Yakin mau reset mapping agent ini?")) return;
+const goToMultiMapping2 = (report) => {
+    router.get(route('exportmappingmulti'), {
+        filePath: report.file_path,
+        agent_id: report.user_id,
+        report_id: report.id
+    })
+}
 
-    router.post(
-        route("mapping.reset"),
-        {
-            agent_id: report.user_id,
-        },
-        {
-            onSuccess: () => {
-                toast.success("Mapping berhasil direset!");
-            },
-            onError: () => {
-                toast.error("Gagal reset mapping");
-            },
-        },
-    );
+const confirmReset = (report) => {
+    reportToReset.value = report;
+    showResetModal.value = true;
 };
 
-// const page = usePage();
+const executeReset = async () => {
+    try {
+        const res = await axios.post(
+            `/resetmapping/${reportToReset.value.id}`,
+            {
+                _method: "DELETE",
+            },
+        );
+
+        console.log("RESET:", res.data);
+
+        showResetModal.value = false;
+
+        toast.success("Mapping berhasil di reset");
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    } catch (error) {
+        console.error(error);
+        alert("Gagal reset mapping");
+    }
+};
+
+const goToMultiMapping = (report) => {
+    if (!report.file_path) {
+        toast.error("File tidak ditemukan");
+        return;
+    }
+
+    router.get(route("import.mapping.multi"), {
+        filePath: report.file_path,
+        agent_id: report.user_id,
+        report_id: report.id,
+    });
+};
 
 const filePath = computed(() => page.props.filePath);
 const agent_id = computed(() => page.props.agent_id);
@@ -282,51 +313,6 @@ const processExport = async (report) => {
         }
     }
 };
-
-// const processExport = async (report) => {
-//     try {
-//         const res = await axios.post("/python/exportexcel", {
-//             file_path: report.file_path,
-//             agent_id: report.user_id,
-//             agent_report_id: report.id,
-//         });
-
-//         console.log("RESPONSE:", res.data);
-//         alert("Route kena: " + res.data.message);
-//     } catch (err) {
-//         console.error("ERROR:", err.response?.data || err.message);
-//     }
-// };
-
-// const processExport = async (report) => {
-//     try {
-//         const res = await axios.post(
-//             "/python/exportexcel",
-//             {
-//                 file_path: report.file_path,
-//                 agent_id: report.user_id,
-//                 agent_report_id: report.id,
-//             },
-//             {
-//                 responseType: "blob",
-//             },
-//         );
-
-//         const url = window.URL.createObjectURL(new Blob([res.data]));
-//         const link = document.createElement("a");
-//         link.href = url;
-//         link.download = "RESULT_YURI.xlsx";
-//         link.click();
-//     } catch (err) {
-//         console.log("ERROR FULL:", err);
-
-//         if (err.response && err.response.data) {
-//             err.response.data.text().then((text) => {
-//                 console.log("ERROR JSON:", text);
-//             });
-//         }
-//     }
-// };
 </script>
 
 <template>
@@ -453,7 +439,7 @@ const processExport = async (report) => {
                                     </button> -->
 
                                     <button
-                                        @click="resetMapping(report)"
+                                        @click="confirmReset(report)"
                                         class="inline-flex items-center px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[11px] hover:bg-red-600 hover:text-white transition-all duration-200"
                                     >
                                         Reset Mapping
@@ -478,6 +464,20 @@ const processExport = async (report) => {
                                             />
                                         </svg>
                                         Set Mapping
+                                    </button>
+
+                                    <button
+                                        @click="goToMultiMapping(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md font-bold text-[11px] hover:bg-purple-600 hover:text-white transition-all duration-200"
+                                    >
+                                        Multi Sheet Mapping
+                                    </button>
+
+                                    <button
+                                        @click="goToMultiMapping2(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md font-bold text-[11px] hover:bg-purple-600 hover:text-white transition-all duration-200"
+                                    >
+                                        Multi Sheet Mapping V2
                                     </button>
 
                                     <button
@@ -848,6 +848,64 @@ const processExport = async (report) => {
                         class="px-4 py-2 bg-gray-500 text-white rounded"
                     >
                         Tutup
+                    </button>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal
+            :show="showResetModal"
+            :closeable="true"
+            @close="showResetModal = false"
+        >
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-3">
+                    Konfirmasi Reset Mapping
+                </h2>
+
+                <div class="mt-4" v-if="reportToReset">
+                    <p class="text-sm text-gray-600">
+                        Apakah Anda yakin ingin mereset mapping untuk laporan
+                        agent berikut?
+                    </p>
+
+                    <div
+                        class="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100"
+                    >
+                        <table class="text-sm">
+                            <tr>
+                                <td class="pr-4 text-gray-500">Nama Agent</td>
+                                <td class="font-bold">
+                                    :
+                                    {{
+                                        reportToReset.user?.name ||
+                                        reportToReset.agent?.user?.name ||
+                                        "-"
+                                    }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p class="mt-4 text-[11px] text-yellow-600 italic">
+                        *Mapping akan dihapus dan perlu dilakukan setting ulang.
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-8">
+                    <button
+                        type="button"
+                        @click="showResetModal = false"
+                        class="text-gray-500 text-sm font-bold px-4 py-2 hover:bg-gray-100 rounded-md transition"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        @click="executeReset"
+                        class="bg-yellow-600 text-white px-5 py-2 rounded-md font-bold text-sm hover:bg-yellow-700 shadow-sm transition"
+                    >
+                        Ya, Reset Mapping
                     </button>
                 </div>
             </div>
