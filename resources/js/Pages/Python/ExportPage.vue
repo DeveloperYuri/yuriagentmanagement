@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
 // =====================
@@ -13,13 +13,45 @@ axios.defaults.baseURL = "http://localhost:8000";
 // STATE
 // =====================
 const file = ref(null);
-const filePath = ref("");
-const sheets = ref([]);
 const headers = ref([]);
-const selectedSheet = ref("");
 const loading = ref(false);
+const page = usePage();
+const sheets = ref([]);
+const selectedSheet = ref(null);
+const filePath = ref(usePage().props.filePath || null);
+const reportId = page.props.report_id;
+const agentId = page.props.agent_id;
 
 const activeTab = ref("jim");
+
+console.log("FILE PATH:", page.props.filePath);
+
+onMounted(async () => {
+    if (!filePath.value) {
+        console.warn("FILE PATH KOSONG");
+        return;
+    }
+
+    console.log("SCAN FILE:", filePath.value);
+
+    try {
+        const res = await axios.post("/python/scan-file", {
+            file_path: filePath.value, // 🔥 beda dengan upload
+        });
+
+        console.log("SHEETS:", res.data);
+
+        filePath.value = res.data.file_path;
+        sheets.value = res.data.sheets;
+
+        // auto pilih sheet pertama
+        if (sheets.value.length > 0) {
+            selectedSheet.value = sheets.value[0];
+        }
+    } catch (err) {
+        console.error("SCAN ERROR:", err.response?.data || err);
+    }
+});
 
 // mapping
 const mappingJim = ref({
@@ -108,28 +140,33 @@ const loadHeaders = async () => {
     }
 };
 
-// =====================
-// LOAD HEADER
-// =====================
-// const loadHeaders = async () => {
-//     if (!selectedSheet.value) return;
+const saveMapping = async () => {
+    if (!filePath.value) return alert("File belum ada");
+    if (!selectedSheet.value) return alert("Sheet belum dipilih");
 
-//     try {
-//         console.log("LOAD HEADER...");
+    try {
+        const payload = {
+            sheet: selectedSheet.value,
 
-//         const res = await axios.post("/python/scan-header", {
-//             file_path: filePath.value,
-//             sheet: selectedSheet.value,
-//         });
+            agent_report_id: reportId,
+            agent_id: agentId,
+            nama_agent: null,
 
-//         headers.value = res.data.headers;
+            mapping: {
+                jim: mappingJim.value,
+                invoice: mappingInv.value,
+            },
+        };
 
-//         console.log("HEADER:", headers.value);
-//     } catch (err) {
-//         console.error("HEADER ERROR:", err.response?.data);
-//         alert("Gagal load header");
-//     }
-// };
+        const res = await axios.post("/mapping/save", payload);
+
+        console.log("SAVE SUCCESS:", res.data);
+        alert("Mapping berhasil disimpan!");
+    } catch (err) {
+        console.error("SAVE ERROR:", err.response?.data || err);
+        alert("Gagal simpan mapping");
+    }
+};
 
 // =====================
 // PROCESS EXPORT
@@ -187,14 +224,14 @@ const processData = async () => {
         <template #header> Export Mapping Agent </template>
 
         <div class="p-6 max-w-5xl mx-auto space-y-6">
-            <div class="bg-white p-5 rounded shadow">
+            <!-- <div class="bg-white p-5 rounded shadow">
                 <h2 class="font-bold mb-3">📂 Upload Laporan Agent</h2>
                 <input
                     type="file"
                     @change="handleFile"
                     class="border p-2 w-full"
                 />
-            </div>
+            </div> -->
 
             <div class="bg-white p-5 rounded shadow">
                 <h2 class="font-bold mb-3">📄 Pilih Sheet</h2>
@@ -289,6 +326,13 @@ const processData = async () => {
                     </div>
                 </div>
             </div>
+
+            <button
+                @click="saveMapping"
+                class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-bold shadow"
+            >
+                💾 Save Mapping
+            </button>
 
             <button
                 @click="processData"

@@ -193,12 +193,12 @@ const goToMapping = (report) => {
 };
 
 const goToMultiMapping2 = (report) => {
-    router.get(route('exportmappingmulti'), {
+    router.get(route("exportMappingPage"), {
         filePath: report.file_path,
         agent_id: report.user_id,
-        report_id: report.id
-    })
-}
+        report_id: report.id,
+    });
+};
 
 const confirmReset = (report) => {
     reportToReset.value = report;
@@ -253,12 +253,12 @@ const processExport = async (report) => {
         console.log("SHEET:", report.sheet_name);
 
         const res = await axios.post(
-            "/python/exportexcel",
+            "/export/process",
             {
                 file_path: report.file_path,
                 agent_id: report.user_id,
                 agent_report_id: report.id,
-                sheet: report.sheet_name,
+                sheet: report.sheet_name || "Sheet1",
             },
             {
                 responseType: "blob",
@@ -445,7 +445,7 @@ const processExport = async (report) => {
                                         Reset Mapping
                                     </button>
 
-                                    <button
+                                    <!-- <button
                                         @click="scanExcel(report)"
                                         class="inline-flex items-center px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md font-bold text-[11px] hover:bg-yellow-600 hover:text-white transition-all duration-200"
                                     >
@@ -464,14 +464,14 @@ const processExport = async (report) => {
                                             />
                                         </svg>
                                         Set Mapping
-                                    </button>
+                                    </button> -->
 
-                                    <button
+                                    <!-- <button
                                         @click="goToMultiMapping(report)"
                                         class="inline-flex items-center px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-md font-bold text-[11px] hover:bg-purple-600 hover:text-white transition-all duration-200"
                                     >
                                         Multi Sheet Mapping
-                                    </button>
+                                    </button> -->
 
                                     <button
                                         @click="goToMultiMapping2(report)"

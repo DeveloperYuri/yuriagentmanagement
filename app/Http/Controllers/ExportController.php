@@ -21,36 +21,51 @@ class ExportController extends Controller
     public function scanFile(Request $request)
     {
         try {
-            if (!$request->hasFile('file')) {
-                return response()->json(['error' => 'Tidak ada file yang diunggah'], 400);
+            // =========================
+            // MODE 1: UPLOAD FILE
+            // =========================
+            if ($request->hasFile('file')) {
+
+                $file = $request->file('file');
+
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $targetDir = storage_path('app/uploads');
+
+                if (!file_exists($targetDir)) {
+                    mkdir($targetDir, 0775, true);
+                }
+
+                $file->move($targetDir, $filename);
+
+                $fullPath = $targetDir . '/' . $filename;
             }
 
-            $file = $request->file('file');
+            // =========================
+            // MODE 2: FILE DARI DB
+            // =========================
+            else if ($request->file_path) {
 
-            // Buat nama file yang unik
-            $filename = time() . '_' . $file->getClientOriginalName();
-
-            // Tentukan lokasi folder (Pastikan folder ini ada: storage/app/uploads)
-            $targetDir = storage_path('app/uploads');
-
-            // Buat folder jika belum ada
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0775, true);
+                // 🔥 INI KUNCI
+                $fullPath = storage_path('app/public/' . $request->file_path);
+            } else {
+                return response()->json(['error' => 'File tidak ditemukan'], 400);
             }
 
-            // Pindahkan file secara manual ke folder tujuan
-            $file->move($targetDir, $filename);
-            $fullPath = $targetDir . '/' . $filename;
-
-            // Validasi fisik file
+            // =========================
+            // VALIDASI FILE
+            // =========================
             if (!file_exists($fullPath)) {
-                return response()->json(['error' => "Gagal menulis file ke disk: $fullPath"], 500);
+                return response()->json([
+                    'error' => "File tidak ditemukan di server: $fullPath"
+                ], 500);
             }
 
-            // Eksekusi Python
+            // =========================
+            // JALANKAN PYTHON
+            // =========================
             $process = new \Symfony\Component\Process\Process([
                 'python3',
-                '/var/www/scripts/scan_sheet.py', // Pastikan script ini ada di sini
+                '/var/www/scripts/scan_sheet.py',
                 $fullPath
             ]);
 
@@ -58,16 +73,15 @@ class ExportController extends Controller
 
             if (!$process->isSuccessful()) {
                 return response()->json([
-                    'error' => 'Script Python gagal dijalankan',
+                    'error' => 'Python gagal',
                     'details' => $process->getErrorOutput()
                 ], 500);
             }
 
-            // Ambil output Python (Daftar sheet)
             $sheets = json_decode($process->getOutput());
 
             return response()->json([
-                'file_path' => $fullPath, // Path ini penting untuk disimpan di state Vue
+                'file_path' => $fullPath,
                 'sheets' => $sheets
             ]);
         } catch (\Exception $e) {
@@ -77,6 +91,66 @@ class ExportController extends Controller
             ], 500);
         }
     }
+
+    // public function scanFile(Request $request)
+    // {
+    //     try {
+    //         if (!$request->hasFile('file')) {
+    //             return response()->json(['error' => 'Tidak ada file yang diunggah'], 400);
+    //         }
+
+    //         $file = $request->file('file');
+
+    //         // Buat nama file yang unik
+    //         $filename = time() . '_' . $file->getClientOriginalName();
+
+    //         // Tentukan lokasi folder (Pastikan folder ini ada: storage/app/uploads)
+    //         $targetDir = storage_path('app/uploads');
+
+    //         // Buat folder jika belum ada
+    //         if (!file_exists($targetDir)) {
+    //             mkdir($targetDir, 0775, true);
+    //         }
+
+    //         // Pindahkan file secara manual ke folder tujuan
+    //         $file->move($targetDir, $filename);
+    //         $fullPath = $targetDir . '/' . $filename;
+
+    //         // Validasi fisik file
+    //         if (!file_exists($fullPath)) {
+    //             return response()->json(['error' => "Gagal menulis file ke disk: $fullPath"], 500);
+    //         }
+
+    //         // Eksekusi Python
+    //         $process = new \Symfony\Component\Process\Process([
+    //             'python3',
+    //             '/var/www/scripts/scan_sheet.py', // Pastikan script ini ada di sini
+    //             $fullPath
+    //         ]);
+
+    //         $process->run();
+
+    //         if (!$process->isSuccessful()) {
+    //             return response()->json([
+    //                 'error' => 'Script Python gagal dijalankan',
+    //                 'details' => $process->getErrorOutput()
+    //             ], 500);
+    //         }
+
+    //         // Ambil output Python (Daftar sheet)
+    //         $sheets = json_decode($process->getOutput());
+
+    //         return response()->json([
+    //             'file_path' => $fullPath, // Path ini penting untuk disimpan di state Vue
+    //             'sheets' => $sheets
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'error' => 'Server Error',
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function scanHeader(Request $request)
     {
@@ -125,13 +199,58 @@ class ExportController extends Controller
         }
     }
 
+    public function store(Request $request)
+    {
+        // dd($request->all());
+        // return response()->json($request->all());
+        // console.log(res.data);
+        try {
+            $mappingJson = json_encode($request->mapping);
+
+            DB::table('mappings')->insert([
+                'sheet' => $request->sheet,
+                'mapping_json' => $mappingJson,
+                'agent_report_id' => $request->agent_report_id,
+                'agent_id' => $request->agent_id,
+                'nama_agent' => $request->nama_agent,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'message' => 'Mapping saved'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function process(Request $request)
     {
         try {
             // 1. Ambil data dari request JSON (Bukan upload file lagi)
-            $filePath = $request->file_path;
-            $mappingJim = $request->mapping_jim;
-            $mappingInv = $request->mapping_inv;
+            // $filePath = $request->file_path;
+            $filePath = storage_path('app/public/' . $request->file_path);
+            // ✅ TARO DI SINI
+            $mapping = DB::table('mappings')
+                ->where('agent_id', $request->agent_id)
+                ->first();
+
+            if (!$mapping) {
+                return response()->json([
+                    'error' => 'Mapping belum ada untuk report ini'
+                ], 400);
+            }
+
+            $mappingData = json_decode($mapping->mapping_json, true);
+
+            $mappingJim = $mappingData['jim'] ?? [];
+            $mappingInv = $mappingData['invoice'] ?? [];
+
+            // $mappingJim = $request->mapping_jim;
+            // $mappingInv = $request->mapping_inv;
 
             // Validasi dasar
             if (!file_exists($filePath)) {

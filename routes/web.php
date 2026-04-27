@@ -113,10 +113,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('python.mapping-export');
 
 
-    Route::post('/export/process', [ExportController::class, 'process']);
-    Route::get('/export-mapping', [ExportController::class, 'exportMappingPage']);
+    Route::post('/export/process', [ExportController::class, 'process'])->name('exportprocess');
+    Route::get('/export-mapping', [ExportController::class, 'exportMappingPage'])->name('exportMappingPage');;
     Route::post('/python/scan-file', [ExportController::class, 'scanFile']);
     Route::post('/python/scan-header', [ExportController::class, 'scanHeader']); // BARIS INI YANG KURANG
+    Route::post('/mapping/save', [ExportController::class, 'store']);
 
     Route::resource('items', ItemController::class);
     Route::resource('itemsgroups', ItemGroupController::class);
