@@ -1,16 +1,27 @@
 import sys
 import pandas as pd
 import json
+import os
 
 def get_headers():
     try:
         file_path = sys.argv[1]
         sheet_input = sys.argv[2]
+        
+        ext = os.path.splitext(file_path)[1].lower()
+
+        if ext == '.xlsb':
+            engine = 'pyxlsb'
+        elif ext == '.xls':
+            engine = 'xlrd'
+        else:
+            engine = 'openpyxl'
 
         # =========================
         # AMBIL SEMUA SHEET
         # =========================
-        xls = pd.ExcelFile(file_path)
+        # xls = pd.ExcelFile(file_path)
+        xls = pd.ExcelFile(file_path, engine=engine)
 
         sheet_map = {
             s.strip().lower(): s for s in xls.sheet_names
@@ -35,7 +46,8 @@ def get_headers():
             sheet_name=real_sheet,
             header=None,
             nrows=20,
-            engine='openpyxl'
+            engine=engine
+            # engine='openpyxl'
         )
 
         # =========================
@@ -98,7 +110,8 @@ def get_headers():
                 file_path,
                 sheet_name=real_sheet,
                 header=[best_row, best_row + 1],
-                engine='openpyxl'
+                engine=engine
+                # engine='openpyxl'
             )
 
             # flatten header
@@ -128,7 +141,8 @@ def get_headers():
                 file_path,
                 sheet_name=real_sheet,
                 header=best_row,
-                engine='openpyxl'
+                engine=engine
+                # engine='openpyxl'
             )
 
         # =========================

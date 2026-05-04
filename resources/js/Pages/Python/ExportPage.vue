@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed  } from "vue";
 import axios from "axios";
 import { Head, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
@@ -21,10 +21,12 @@ const selectedSheet = ref(null);
 const filePath = ref(usePage().props.filePath || null);
 const reportId = page.props.report_id;
 const agentId = page.props.agent_id;
+const fileName = computed(() => page.props.fileName);
 
 const activeTab = ref("jim");
 
 console.log("FILE PATH:", page.props.filePath);
+console.log("FILE ASLI:", fileName.value);
 
 onMounted(async () => {
     if (!filePath.value) {
@@ -150,7 +152,7 @@ const saveMapping = async () => {
 
             agent_report_id: reportId,
             agent_id: agentId,
-            nama_agent: null,
+            //nama_agent: null,
 
             mapping: {
                 jim: mappingJim.value,
@@ -340,7 +342,7 @@ const processData = async () => {
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded font-bold transition duration-200 shadow-lg disabled:bg-gray-400"
             >
                 <span v-if="loading">⏳ Processing Data... Please wait...</span>
-                <span v-else>🚀 Process & Export All Sheets</span>
+                <!-- <span v-else>🚀 Process & Export All Sheets</span> -->
             </button>
         </div>
     </AuthenticatedLayout>

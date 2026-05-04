@@ -34,8 +34,9 @@ onMounted(() => {
         route().current("roles.*") ||
         route().current("regional.*") ||
         route().current("users.*") ||
-        route().current("items.*") ||        
-        route().current("itemsgroups.*") 
+        route().current("items.*") ||
+        route().current("itemsgroups.*") ||
+        route().current("mappingprodukps.*")
     ) {
         isSettingsOpen.value = true;
     }
@@ -291,6 +292,18 @@ const toggleSettings = () => {
                             class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
                         >
                             Item Group
+                        </Link>
+
+                        <Link
+                            :href="route('mappingproduk.index')"
+                            :class="
+                                route().current('mappingproduk.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Mapping Produk
                         </Link>
 
                         <Link

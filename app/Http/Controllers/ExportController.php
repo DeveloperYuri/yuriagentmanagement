@@ -11,10 +11,15 @@ class ExportController extends Controller
 {
     public function exportMappingPage(Request $request)
     {
+        $report = DB::table('agent_reports')
+                    ->where('id', $request->report_id)
+                    ->first();
+
         return inertia('Python/ExportPage', [
             'filePath' => $request->filePath,
             'agent_id' => $request->agent_id,
             'report_id' => $request->report_id,
+            'fileName' => $report->file_name ?? '',
         ]);
     }
 
@@ -92,66 +97,6 @@ class ExportController extends Controller
         }
     }
 
-    // public function scanFile(Request $request)
-    // {
-    //     try {
-    //         if (!$request->hasFile('file')) {
-    //             return response()->json(['error' => 'Tidak ada file yang diunggah'], 400);
-    //         }
-
-    //         $file = $request->file('file');
-
-    //         // Buat nama file yang unik
-    //         $filename = time() . '_' . $file->getClientOriginalName();
-
-    //         // Tentukan lokasi folder (Pastikan folder ini ada: storage/app/uploads)
-    //         $targetDir = storage_path('app/uploads');
-
-    //         // Buat folder jika belum ada
-    //         if (!file_exists($targetDir)) {
-    //             mkdir($targetDir, 0775, true);
-    //         }
-
-    //         // Pindahkan file secara manual ke folder tujuan
-    //         $file->move($targetDir, $filename);
-    //         $fullPath = $targetDir . '/' . $filename;
-
-    //         // Validasi fisik file
-    //         if (!file_exists($fullPath)) {
-    //             return response()->json(['error' => "Gagal menulis file ke disk: $fullPath"], 500);
-    //         }
-
-    //         // Eksekusi Python
-    //         $process = new \Symfony\Component\Process\Process([
-    //             'python3',
-    //             '/var/www/scripts/scan_sheet.py', // Pastikan script ini ada di sini
-    //             $fullPath
-    //         ]);
-
-    //         $process->run();
-
-    //         if (!$process->isSuccessful()) {
-    //             return response()->json([
-    //                 'error' => 'Script Python gagal dijalankan',
-    //                 'details' => $process->getErrorOutput()
-    //             ], 500);
-    //         }
-
-    //         // Ambil output Python (Daftar sheet)
-    //         $sheets = json_decode($process->getOutput());
-
-    //         return response()->json([
-    //             'file_path' => $fullPath, // Path ini penting untuk disimpan di state Vue
-    //             'sheets' => $sheets
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'error' => 'Server Error',
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function scanHeader(Request $request)
     {
 
@@ -207,12 +152,17 @@ class ExportController extends Controller
         try {
             $mappingJson = json_encode($request->mapping);
 
+            $user = DB::table('users')
+                    ->where('id', $request->agent_id)
+                    ->first();
+
             DB::table('mappings')->insert([
                 'sheet' => $request->sheet,
                 'mapping_json' => $mappingJson,
                 'agent_report_id' => $request->agent_report_id,
                 'agent_id' => $request->agent_id,
-                'nama_agent' => $request->nama_agent,
+                'nama_agent' => $user->name ?? null,
+                // 'nama_agent' => $request->nama_agent,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -238,11 +188,17 @@ class ExportController extends Controller
                 ->where('agent_id', $request->agent_id)
                 ->first();
 
+            $aliases = DB::table('item_aliases')
+                ->select('agent_name', 'clean_name', 'master_name')
+                ->get();
+
             if (!$mapping) {
                 return response()->json([
                     'error' => 'Mapping belum ada untuk report ini'
                 ], 400);
             }
+
+            $namaAgent = $mapping->nama_agent ?? '';
 
             $mappingData = json_decode($mapping->mapping_json, true);
 
@@ -272,6 +228,8 @@ class ExportController extends Controller
                 "mapping_jim" => $mappingJim,
                 "mapping_inv" => $mappingInv,
                 "master_data" => $items,
+                "alias_data"  => $aliases,
+                "nama_agent"  => $namaAgent,
             ];
 
             // 4. Eksekusi Python

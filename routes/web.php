@@ -7,6 +7,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryImportController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ItemGroupController;
+use App\Http\Controllers\MappingProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
@@ -122,6 +123,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('items', ItemController::class);
     Route::resource('itemsgroups', ItemGroupController::class);
     Route::post('/items/import', [ItemController::class, 'import'])->name('items.import');
+
+    Route::get('/mapping-produk', [MappingProdukController::class, 'index'])->name('mappingproduk.index');
+    Route::post('/mapping-produk/save', [MappingProdukController::class, 'store'])->name('mapping-produk.store');
 });
 
 

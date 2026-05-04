@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('item_aliases', function (Blueprint $table) {
+            $table->id();
+            $table->string('agent_name');   // dari laporan agent
+            $table->string('clean_name');   // hasil normalize
+            $table->string('master_name');  // nama resmi
+            $table->string('item_code')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('item_aliases');
+    }
+};

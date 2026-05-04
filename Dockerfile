@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     python3-xlsxwriter \
     && docker-php-ext-configure zip \
     && docker-php-ext-install pdo pdo_pgsql gd zip \
-    && pip install thefuzz python-Levenshtein --break-system-packages \
+    && pip install thefuzz python-Levenshtein xlrd pyxlsb --break-system-packages \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # --- TAMBAHKAN NODE.JS DI SINI ---

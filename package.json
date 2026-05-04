@@ -24,6 +24,7 @@
         "@heroicons/vue": "^2.2.0",
         "@inertiajs/core": "^3.0.0",
         "@inertiajs/vue3": "^3.0.0",
+        "@vueform/multiselect": "^2.6.11",
         "flowbite": "^4.0.1",
         "vue": "^3.5.31",
         "vue-toastification": "^2.0.0-rc.5"
