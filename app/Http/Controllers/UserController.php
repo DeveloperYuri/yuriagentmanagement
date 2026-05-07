@@ -52,6 +52,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'regional_id' => $request->regional_id,
+            'kode_user' => $request->kode_user
         ]);
 
         // Assign role menggunakan Spatie
@@ -74,6 +75,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'regional_id' => $request->regional_id,
+            'kode_user' => $request->kode_user
         ]);
 
         // Update password hanya jika diisi

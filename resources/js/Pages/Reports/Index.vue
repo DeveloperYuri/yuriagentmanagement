@@ -295,23 +295,44 @@ const processExport = async (report) => {
         link.remove();
         window.URL.revokeObjectURL(url);
     } catch (err) {
-        console.log("ERROR FULL:", err);
+        console.log("========== ERROR ==========");
+        console.log(err);
 
-        // 🔥 Tangkap error dari backend (yang return JSON tapi kebungkus blob)
-        if (err.response && err.response.data) {
-            try {
+        if (err.response) {
+            console.log("STATUS:", err.response.status);
+
+            // 🔥 kalau error berupa blob
+            if (err.response.data instanceof Blob) {
                 const text = await err.response.data.text();
-                const json = JSON.parse(text);
 
-                console.error("ERROR JSON:", json);
-                alert(json.message || "Export gagal");
-            } catch {
-                alert("Terjadi error tidak dikenal");
+                console.log("BLOB ERROR TEXT:");
+                console.log(text);
+            } else {
+                console.log("DATA:", err.response.data);
             }
-        } else {
-            alert("Server tidak merespon");
         }
     }
+    // baru edit
+
+    // lama bener
+    // catch (err) {
+    //     console.log("ERROR FULL:", err);
+
+    //     // 🔥 Tangkap error dari backend (yang return JSON tapi kebungkus blob)
+    //     if (err.response && err.response.data) {
+    //         try {
+    //             const text = await err.response.data.text();
+    //             const json = JSON.parse(text);
+
+    //             console.error("ERROR JSON:", json);
+    //             alert(json.message || "Export gagal");
+    //         } catch {
+    //             alert("Terjadi error tidak dikenal");
+    //         }
+    //     } else {
+    //         alert("Server tidak merespon");
+    //     }
+    // }
 };
 </script>
 

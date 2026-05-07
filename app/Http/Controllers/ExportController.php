@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AgentExportReport;
+use App\Models\AgentExportStock;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -12,8 +15,8 @@ class ExportController extends Controller
     public function exportMappingPage(Request $request)
     {
         $report = DB::table('agent_reports')
-                    ->where('id', $request->report_id)
-                    ->first();
+            ->where('id', $request->report_id)
+            ->first();
 
         return inertia('Python/ExportPage', [
             'filePath' => $request->filePath,
@@ -153,8 +156,8 @@ class ExportController extends Controller
             $mappingJson = json_encode($request->mapping);
 
             $user = DB::table('users')
-                    ->where('id', $request->agent_id)
-                    ->first();
+                ->where('id', $request->agent_id)
+                ->first();
 
             DB::table('mappings')->insert([
                 'sheet' => $request->sheet,
@@ -241,14 +244,155 @@ class ExportController extends Controller
             if (!$process->isSuccessful()) {
                 return response()->json([
                     'error' => 'Python Processor Gagal',
-                    'detail' => $process->getErrorOutput()
+                    'detail' => $process->getErrorOutput(),
+                    'output' => $process->getOutput(),
                 ], 500);
             }
 
+            // if (!$process->isSuccessful()) {
+            //     return response()->json([
+            //         'error' => 'Python Processor Gagal',
+            //         'detail' => $process->getErrorOutput()
+            //     ], 500);
+            // }
+
+            $result = json_decode($process->getOutput(), true);
+
+            $invoiceData = $result['invoice_data'] ?? [];
+            $stockAgentData = $result['stock_agent_data'] ?? [];
+
+            $periodeDate = null;
+
+            if (!empty($invoiceData)) {
+
+                $firstDate =
+                    $invoiceData[0]['Tanggal Invoice'] ?? null;
+
+                if ($firstDate) {
+
+                    $periodeDate = Carbon::parse($firstDate);
+                }
+            }
+
+            foreach ($invoiceData as $row) {
+
+                AgentExportReport::create([
+
+                    'sheet_name' => 'invoice',
+
+                    'nama_agen' =>
+                    $row['Nama Agen'] ?? null,
+
+                    'kode_customer' =>
+                    $row['Kode Customer'] ?? null,
+
+                    'nama_customer' =>
+                    $row['Nama Customer'] ?? null,
+
+                    'alamat_customer' =>
+                    $row['Alamat Customer'] ?? null,
+
+                    'nomor_telepon_customer' =>
+                    $row['Nomor Telepon/HP Customer'] ?? null,
+
+                    'invoice_nomor_agen' =>
+                    $row['Invoice Nomor Agen'] ?? null,
+
+                    'tanggal_invoice' =>
+                    $row['Tanggal Invoice'] ?? null,
+
+                    'tipe_customer' =>
+                    $row['Tipe Customer'] ?? null,
+
+                    'sales' =>
+                    $row['Sales'] ?? null,
+
+                    'sku_kode_agen' =>
+                    $row['SKU Kode Agen'] ?? null,
+
+                    'nama_sku' =>
+                    $row['Nama SKU'] ?? null,
+
+                    'qty_terjual_pcs' =>
+                    (float) ($row['Qty Terjual (PCS)'] ?: 0),
+
+                    'diskon_1_reguler' =>
+                    (float) ($row['% Diskon 1 (Reguler)'] ?: 0),
+
+                    'diskon_2_cash' =>
+                    (float) ($row['% Diskon 2 (Cash)'] ?: 0),
+
+                    'diskon_3_dc_free' =>
+                    (float) ($row['% Diskon 3 (DC Free)'] ?: 0),
+
+                    'diskon_4_promo_1' =>
+                    (float) ($row['% Diskon 4 (Promo 1)'] ?: 0),
+
+                    'diskon_5_promo_2' =>
+                    (float) ($row['% Diskon 5 (Promo 2)'] ?: 0),
+
+                    'diskon_6_rp' =>
+                    (float) ($row['% Diskon 6 (Rp)'] ?: 0),
+
+                    'quantity_bonus' =>
+                    (float) ($row['Quantity Bonus'] ?: 0),
+
+                    'rafraksi' =>
+                    (float) ($row['Rafraksi'] ?: 0),
+
+                    'total_invoice_value' =>
+                    (float) ($row['Total Invoice Value'] ?: 0),
+
+
+                ]);
+            }
+
+            foreach ($stockAgentData as $row) {
+
+                AgentExportStock::create([
+
+                    'kode_sku_agent' =>
+                    $row['Kode SKU Agent'] ?? null,
+
+                    'kode_sku_jim' =>
+                    $row['Kode SKU JIM'] ?? null,
+
+                    'item_name_jim' =>
+                    $row['Item Name JIM'] ?? null,
+
+                    'stock_karton' =>
+                    $row['Stock (Karton)'] ?? 0,
+
+                    'bulan' =>
+                    $periodeDate?->month,
+
+                    'tahun' =>
+                    $periodeDate?->year,
+
+                    'periode' =>
+                    $periodeDate?->format('Y-m'),
+
+                ]);
+            }
+
+            $excelBinary = base64_decode($result['excel_base64']);
+
+            return response($excelBinary)
+                ->header(
+                    'Content-Type',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+                ->header(
+                    'Content-Disposition',
+                    'attachment; filename="Hasil_Mapping_3_Sheet.xlsx"'
+                );
+
+            // dd($result);
+
             // 5. Return ke Vue sebagai Download
-            return response($process->getOutput())
-                ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-                ->header('Content-Disposition', 'attachment; filename="Hasil_Mapping_3_Sheet.xlsx"');
+            // return response($process->getOutput())
+            //     ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            //     ->header('Content-Disposition', 'attachment; filename="Hasil_Mapping_3_Sheet.xlsx"');
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

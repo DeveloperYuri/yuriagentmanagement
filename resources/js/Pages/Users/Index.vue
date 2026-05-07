@@ -30,6 +30,7 @@ const form = useForm({
     password: "",
     role: "",
     regional_id: "",
+    kode_user: "",
 });
 
 const openAddModal = () => {
@@ -46,6 +47,7 @@ const openEditModal = (user) => {
     editId.value = user.id;
     form.name = user.name;
     form.email = user.email;
+    form.kode_user = user.kode_user;
     form.password = "";
     form.role = user.roles && user.roles.length > 0 ? user.roles[0].name : "";
     form.regional_id = user.regional_id || "";
@@ -124,6 +126,7 @@ const executeDelete = () => {
                     >
                         <tr>
                             <th class="px-6 py-4 text-left">Nama & Email</th>
+                            <th class="px-6 py-4">Kode User</th>
                             <th class="px-6 py-4">Role</th>
                             <th class="px-6 py-4">Regional</th>
                             <th class="px-6 py-4">Aksi</th>
@@ -139,10 +142,20 @@ const executeDelete = () => {
                                 <div class="font-bold text-gray-800">
                                     {{ user.name }}
                                 </div>
+
                                 <div class="text-xs text-gray-400 font-mono">
                                     {{ user.email }}
                                 </div>
                             </td>
+
+                            <td class="px-6 py-4">
+                                <span
+                                    class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-[10px] font-bold uppercase font-mono"
+                                >
+                                    {{ user.kode_user }}
+                                </span>
+                            </td>
+
                             <td class="px-6 py-4">
                                 <span
                                     class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold uppercase"
@@ -232,6 +245,23 @@ const executeDelete = () => {
                             required
                         />
                         <InputError :message="form.errors.name" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <InputLabel for="kode_user" value="Kode User" />
+
+                        <TextInput
+                            id="kode_user"
+                            type="text"
+                            class="mt-1 block w-full"
+                            v-model="form.kode_user"
+                            required
+                        />
+
+                        <InputError
+                            :message="form.errors.kode_user"
+                            class="mt-1"
+                        />
                     </div>
 
                     <div>

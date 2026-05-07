@@ -5,6 +5,7 @@ import re
 from rapidfuzz import process, fuzz
 from io import BytesIO
 import os
+import base64
 
 def get_engine(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -50,7 +51,9 @@ def detect_header(file_path, sheet, engine):
             row_content.str.contains("kode").sum() +
             row_content.str.contains("nama").sum() +
             row_content.str.contains("alamat").sum() +
-            row_content.str.contains("qty|jumlah").sum()
+            row_content.str.contains("qty|jumlah").sum() +
+            row_content.str.contains("kode|co|copc").sum() +
+            row_content.str.contains(r"\bna\b", case=False, na=False).sum()
         )
         if score > best_score:
             best_score = score
@@ -149,6 +152,7 @@ def run():
             # =====================
             # PROSES JIM
             # =====================
+            
             col_sku_agent = find_column(mapping_jim.get("Kode SKU Agent"), df.columns)
             col_stock_agent = find_column(mapping_jim.get("Stock Akhir Agent"), df.columns)
             col_nama_agent = find_column(mapping_jim.get("Nama Produk"), df.columns)
@@ -482,8 +486,72 @@ def run():
 
             #     autofit_columns(writer.book["Stock Agen"])
 
+        # lama bener
+        # output.seek(0)
+        # sys.stdout.buffer.write(output.read())
+        
+        
+        # baru ubah 
         output.seek(0)
-        sys.stdout.buffer.write(output.read())
+
+        excel_base64 = base64.b64encode(output.read()).decode('utf-8')
+
+        invoice_data = []
+        stock_agent_data = []
+
+        # =====================
+        # INVOICE JSON
+        # =====================
+        if not df_inv_final.empty:
+            invoice_data = (
+                df_inv_final
+                .fillna("")
+                .to_dict(orient="records")
+            )
+
+        # =====================
+        # STOCK JSON
+        # =====================
+        if not df_jim_final.empty:
+
+            df_stock_json = (
+                df_jim_final
+                .groupby(["Item Code", "Item Name"], as_index=False, sort=False)
+                .agg({
+                    "Stock PCS": "sum",
+                    "Item Box": "first",
+                    "Kode SKU Agent": "first",
+                    "ORDER": "min"
+                })
+            )
+
+            df_stock_json["Stock (Karton)"] = (
+                df_stock_json["Stock PCS"] / df_stock_json["Item Box"]
+            ).round(0).astype(int)
+
+            df_stock_json = df_stock_json.sort_values("ORDER")
+
+            df_stock_json = df_stock_json.rename(columns={
+                "Item Code": "Kode SKU JIM",
+                "Item Name": "Item Name JIM"
+            })
+
+            stock_agent_data = (
+                df_stock_json
+                .fillna("")
+                .to_dict(orient="records")
+            )
+
+        # =====================
+        # FINAL RESULT
+        # =====================
+        result = {
+            "invoice_data": invoice_data,
+            "stock_agent_data": stock_agent_data,
+            "excel_base64": excel_base64
+        }
+
+        print(json.dumps(result, default=str))
 
     except Exception as e:
         sys.stderr.write(str(e))
