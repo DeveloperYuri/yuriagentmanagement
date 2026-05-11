@@ -18,6 +18,17 @@ class AgentExportStock extends Model
         'stock_karton',
         'bulan',
         'tahun',
-        'periode'
+        'periode',
+        'agent_id'
     ];
+
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'kode_sku_jim', 'item_code');
+    }
 }

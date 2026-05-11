@@ -334,6 +334,57 @@ const processExport = async (report) => {
     //     }
     // }
 };
+
+const processExportCMO = async (report) => {
+    try {
+        const res = await axios.post(
+            "/export/process-cmo",
+            {
+                agent_id: report.user_id,
+            },
+            {
+                responseType: "blob",
+            },
+        );
+
+        const contentType = res.headers["content-type"];
+
+        if (contentType && contentType.includes("application/json")) {
+            const text = await res.data.text();
+            const json = JSON.parse(text);
+
+            alert(json.message || "Terjadi error");
+            return;
+        }
+
+        const blob = new Blob([res.data], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `RESULT_CMO_${Date.now()}.xlsx`;
+
+        document.body.appendChild(link);
+        link.click();
+
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Export CMO berhasil");
+    } catch (err) {
+        console.log(err);
+
+        if (err.response?.data instanceof Blob) {
+            const text = await err.response.data.text();
+            console.log(text);
+        }
+
+        toast.error("Export CMO gagal");
+    }
+};
 </script>
 
 <template>
@@ -521,6 +572,28 @@ const processExport = async (report) => {
                                         </svg>
 
                                         Export Excel
+                                    </button>
+
+                                    <button
+                                        @click="processExportCMO(report)"
+                                        class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-md font-bold text-[11px] hover:bg-blue-600 hover:text-white transition-all duration-200"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-3.5 w-3.5 mr-1"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                            />
+                                        </svg>
+
+                                        Export CMO
                                     </button>
 
                                     <template v-if="canManageReport">

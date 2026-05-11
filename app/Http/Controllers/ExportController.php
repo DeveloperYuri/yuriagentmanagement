@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CMOExport;
 use App\Models\AgentExportReport;
 use App\Models\AgentExportStock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\Process\Process;
 
 class ExportController extends Controller
@@ -372,6 +374,9 @@ class ExportController extends Controller
                     'periode' =>
                     $periodeDate?->format('Y-m'),
 
+                    'agent_id' =>
+                    $request->agent_id,
+
                 ]);
             }
 
@@ -396,5 +401,13 @@ class ExportController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function processCMO(Request $request)
+    {
+        return Excel::download(
+            new CMOExport($request->agent_id),
+            'EXPORT_CMO.xlsx'
+        );
     }
 }

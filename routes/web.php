@@ -126,6 +126,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/mapping-produk', [MappingProdukController::class, 'index'])->name('mappingproduk.index');
     Route::post('/mapping-produk/save', [MappingProdukController::class, 'store'])->name('mapping-produk.store');
+
+    Route::post('/export/process-cmo', [ExportController::class, 'processCMO']);
 });
 
 
