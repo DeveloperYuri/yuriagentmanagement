@@ -18,6 +18,9 @@ class Item extends Model
         'item_group',
         'uom',
         'weight',
-        'description'
+        'description',
+        'length_cm',
+        'width_cm',
+        'height_cm',
     ];
 }
