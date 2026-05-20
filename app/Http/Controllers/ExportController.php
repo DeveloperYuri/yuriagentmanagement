@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\CMOExport;
 use App\Models\AgentExportReport;
 use App\Models\AgentExportStock;
+use App\Models\AgentReport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -345,7 +346,8 @@ class ExportController extends Controller
                     'total_invoice_value' =>
                     (float) ($row['Total Invoice Value'] ?: 0),
 
-
+                    'match_item' =>
+                    $row['MATCH ITEM'] ?? null,
                 ]);
             }
 
@@ -405,9 +407,15 @@ class ExportController extends Controller
 
     public function processCMO(Request $request)
     {
+        $report = AgentReport::find($request->report_id);
+
         return Excel::download(
-            new CMOExport($request->agent_id),
+            new CMOExport($report->id),
             'EXPORT_CMO.xlsx'
         );
+        // return Excel::download(
+        //     new CMOExport($request->agent_id),
+        //     'EXPORT_CMO.xlsx'
+        // );
     }
 }

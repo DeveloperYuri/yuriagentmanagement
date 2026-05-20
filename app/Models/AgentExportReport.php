@@ -39,7 +39,8 @@ class AgentExportReport extends Model
         'total_invoice_value',
         'kode_sku_jim',
         'item_name_jim',
-        'stock_karton'
+        'stock_karton',
+        'match_item',
     ];
 
     protected $casts = [

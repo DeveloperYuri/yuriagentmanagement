@@ -15,9 +15,11 @@ import { useToast } from "vue-toastification";
 const props = defineProps({
     items: Object,
     groups: Array,
+    filters: Object,
 });
 
 const toast = useToast();
+const search = ref(props.filters?.search || "");
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
@@ -97,13 +99,26 @@ const executeDelete = () => {
     });
 };
 
-/* ✅ pagination */
+/* pagination */
 const goToPage = (url) => {
     if (!url) return;
     router.visit(url, {
         preserveScroll: true,
         preserveState: true,
     });
+};
+
+const doSearch = () => {
+    router.get(
+        route("items.index"),
+        {
+            search: search.value,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        },
+    );
 };
 </script>
 
@@ -145,6 +160,16 @@ const goToPage = (url) => {
             </div>
 
             <!-- TABLE -->
+            <div class="bg-white p-4 border-b">
+                <input
+                    v-model="search"
+                    @input="doSearch"
+                    type="text"
+                    placeholder="Search item name..."
+                    class="w-full border rounded-md px-3 py-2 text-sm"
+                />
+            </div>
+
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
                 <table class="w-full text-sm">
                     <thead
@@ -241,6 +266,77 @@ const goToPage = (url) => {
                 </div>
             </div>
         </div>
+
+        <!-- ADD / EDIT MODAL -->
+        <Modal :show="showModal" @close="showModal = false">
+            <div class="p-6">
+                <h2 class="text-lg font-bold mb-5">
+                    {{ isEditing ? "Edit Item" : "Tambah Item" }}
+                </h2>
+
+                <!-- ITEM CODE -->
+                <div class="mb-4">
+                    <InputLabel value="Item Code" />
+
+                    <TextInput v-model="form.item_code" class="w-full mt-1" />
+
+                    <InputError :message="form.errors.item_code" />
+                </div>
+
+                <!-- ITEM NAME -->
+                <div class="mb-4">
+                    <InputLabel value="Item Name" />
+
+                    <TextInput v-model="form.item_name" class="w-full mt-1" />
+
+                    <InputError :message="form.errors.item_name" />
+                </div>
+
+                <!-- ITEM PER BOX -->
+                <div class="mb-4">
+                    <InputLabel value="Item Per Box" />
+
+                    <TextInput
+                        v-model="form.item_per_box"
+                        class="w-full mt-1"
+                    />
+
+                    <InputError :message="form.errors.item_per_box" />
+                </div>
+
+                <!-- ITEM GROUP -->
+                <div class="mb-4">
+                    <InputLabel value="Item Group" />
+
+                    <select
+                        v-model="form.item_group"
+                        class="w-full border-gray-300 rounded-md mt-1"
+                    >
+                        <option value="">Pilih Group</option>
+
+                        <option
+                            v-for="group in groups"
+                            :key="group.id"
+                            :value="group.name"
+                        >
+                            {{ group.name }}
+                        </option>
+                    </select>
+
+                    <InputError :message="form.errors.item_group" />
+                </div>
+
+                <div class="flex justify-end gap-2 mt-6">
+                    <SecondaryButton @click="showModal = false">
+                        Batal
+                    </SecondaryButton>
+
+                    <PrimaryButton @click="submit">
+                        {{ isEditing ? "Update" : "Simpan" }}
+                    </PrimaryButton>
+                </div>
+            </div>
+        </Modal>
 
         <!-- IMPORT MODAL -->
         <Modal :show="showImportModal" @close="showImportModal = false">

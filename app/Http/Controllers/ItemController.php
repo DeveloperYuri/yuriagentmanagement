@@ -11,15 +11,36 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ItemController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $items = Item::latest()->paginate(10);
+        $query = Item::query();
+
+        if ($request->filled('search')) {
+            $query->where('item_name', 'ilike', '%' . $request->search . '%');
+        }
+
+        $items = $query
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $groups = ItemGroup::all();
 
         return Inertia::render('Items/Index', [
-            'items' => $items, // ✅ WAJIB INI
-            'groups' => ItemGroup::select('id', 'name')->get(),
+            'items' => $items,
+            'groups' => $groups,
         ]);
     }
+    // public function index()
+    // {
+    //     $items = Item::latest()->paginate(10);
+
+    //     return Inertia::render('Items/Index', [
+    //         'items' => $items, // ✅ WAJIB INI
+    //         'groups' => ItemGroup::select('id', 'name')->get(),
+    //     ]);
+    // }
 
     public function create()
     {

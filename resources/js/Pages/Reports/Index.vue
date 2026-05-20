@@ -340,7 +340,8 @@ const processExportCMO = async (report) => {
         const res = await axios.post(
             "/export/process-cmo",
             {
-                agent_id: report.user_id,
+                // agent_id: report.user_id,
+                 report_id: report.id,
             },
             {
                 responseType: "blob",

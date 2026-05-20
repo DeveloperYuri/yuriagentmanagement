@@ -126,6 +126,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/mapping-produk', [MappingProdukController::class, 'index'])->name('mappingproduk.index');
     Route::post('/mapping-produk/save', [MappingProdukController::class, 'store'])->name('mapping-produk.store');
+    Route::put('/mapping-produk/{id}', [MappingProdukController::class, 'update'])
+        ->name('mapping-produk.update');
+    Route::delete('/mapping-produk/{id}', [MappingProdukController::class, 'destroy'])
+        ->name('mapping-produk.destroy');
 
     Route::post('/export/process-cmo', [ExportController::class, 'processCMO']);
 });

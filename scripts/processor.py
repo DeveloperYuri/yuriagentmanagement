@@ -6,6 +6,9 @@ from rapidfuzz import process, fuzz
 from io import BytesIO
 import os
 import base64
+import numpy as np
+
+# pd.set_option('future.no_silent_downcasting', True)
 
 def get_engine(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -350,6 +353,142 @@ def run():
                             df_inv_sheet[field] = df[excel_col]
                     else:
                         df_inv_sheet[field] = pd.NA
+                        
+                        #BARUURRURURURURUR
+
+                if "Nama SKU" in df_inv_sheet.columns:
+                    # 1. Normalisasi nama (Vectorized)
+                    df_inv_sheet["clean_name"] = df_inv_sheet["Nama SKU"].fillna("").apply(normalize)
+
+                    if not alias_df.empty:
+                        # 2. Amankan kolom agar tidak Error 500 lagi
+                        # Kita pastikan kolom yang dipanggil benar-benar ada
+                        master_col = 'master_name' if 'master_name' in alias_df.columns else alias_df.columns[0]
+                        alias_col = 'alias_name' if 'alias_name' in alias_df.columns else None
+                        
+                        # 3. Tandai Duplikat di Master secara Manual
+                        # Kita hitung berapa kali tiap clean_name muncul di master data
+                        counts = alias_df['clean_name'].value_counts().to_dict()
+                        
+                        # 4. BUANG DUPLIKAT di tabel alias sebelum Join
+                        # Ini kunci agar tidak error 'Reindexing'. Kita ambil satu saja buat mapping.
+                        alias_lookup = alias_df.drop_duplicates(subset=['clean_name'], keep='first').copy()
+
+                        # 5. Gunakan LEFT JOIN (Merge) - Cara paling aman
+                        df_inv_sheet = df_inv_sheet.merge(
+                            alias_lookup[['clean_name', master_col] + ([alias_col] if alias_col else [])], 
+                            on='clean_name', 
+                            how='left'
+                        )
+
+                        # 6. Tentukan Status & Tandai jika sebenarnya ada duplikat
+                        def check_status(row):
+                            c_name = row['clean_name']
+                            if pd.isnull(row[master_col]):
+                                return "NOT MATCH"
+                            if counts.get(c_name, 0) > 1:
+                                return "DUPLICATE_IN_MASTER"
+                            return "ALIAS_MATCH"
+
+                        df_inv_sheet["MATCH STATUS"] = df_inv_sheet.apply(check_status, axis=1)
+                        
+                        # 7. Rename Kolom Output
+                        rename_map = {master_col: "MATCH ITEM"}
+                        if alias_col:
+                            rename_map[alias_col] = "MATCH ALIAS"
+                        else:
+                            df_inv_sheet["MATCH ALIAS"] = ""
+                            
+                        df_inv_sheet.rename(columns=rename_map, inplace=True)
+                        
+                    else:
+                        df_inv_sheet["MATCH ITEM"] = ""
+                        df_inv_sheet["MATCH ALIAS"] = ""
+                        df_inv_sheet["MATCH STATUS"] = "NOT MATCH"
+
+                    # 8. Final Cleanup (Isi yang kosong)
+                    df_inv_sheet["MATCH ITEM"] = df_inv_sheet["MATCH ITEM"].fillna("")
+                    df_inv_sheet["MATCH ALIAS"] = df_inv_sheet["MATCH ALIAS"].fillna("")
+                    
+                if "clean_name" in df_inv_sheet.columns:
+                    df_inv_sheet.drop(columns=["clean_name"], inplace=True)
+                        
+                        # if "Nama SKU" in df_inv_sheet.columns:
+
+                        #     df_inv_sheet["clean_name"] = (
+                        #         df_inv_sheet["Nama SKU"]
+                        #         .fillna("")
+                        #         .apply(normalize)
+                        #     )
+
+                        #     match_status = []
+                        #     matched_item = []
+                        #     matched_alias = []
+                            
+                        #     match_cache = {}
+
+                        #     for _, row in df_inv_sheet.iterrows():
+
+                        #         clean_name = row["clean_name"]
+                                
+                        #         if clean_name in match_cache:
+
+                        #             cache = match_cache[clean_name]
+
+                        #             matched_item.append(cache["item"])
+                        #             matched_alias.append(cache["alias"])
+                        #             match_status.append(cache["status"])
+
+                        #             continue
+
+                        #         alias_match = None
+
+                        #         # =====================
+                        #         # CEK ALIAS
+                        #         # =====================
+                        #         if not alias_df.empty:
+                        #             match = alias_df[
+                        #                 alias_df["clean_name"] == clean_name
+                        #             ]
+
+                        #             if not match.empty:
+                        #                 alias_match = match.iloc[0]
+
+                        #         # =====================
+                        #         # JIKA ADA ALIAS
+                        #         # =====================
+                        #         if alias_match is not None:
+
+                        #             matched_item.append(alias_match["master_name"])
+                        #             matched_alias.append(alias_match.get("alias_name", ""))
+                        #             match_status.append("ALIAS_MATCH")
+                                    
+                        #             match_cache[clean_name] = {
+                        #                 "item": alias_match["master_name"],
+                        #                 "alias": alias_match.get("alias_name", ""),
+                        #                 "status": "ALIAS_MATCH"
+                        #             }
+
+                        #         else:
+                                    
+                        #             matched_item.append("")
+                        #             matched_alias.append("")
+                        #             match_status.append("NOT MATCH")
+
+                        #             match_cache[clean_name] = {
+                        #                 "item": "",
+                        #                 "alias": "",
+                        #                 "status": "NOT MATCH"
+                        #             }
+
+                        #     df_inv_sheet["MATCH ITEM"] = matched_item
+                        #     df_inv_sheet["MATCH ALIAS"] = matched_alias
+                        #     df_inv_sheet["MATCH STATUS"] = match_status
+
+                        #     df_inv_sheet.drop(columns=["clean_name"], inplace=True)
+    
+                        # if not df_inv_sheet.replace(pd.NA, "").dropna(how='all').empty:
+                        #     df_invoice_list.append(df_inv_sheet)
                 
                 if not df_inv_sheet.replace(pd.NA, "").dropna(how='all').empty:
                     df_invoice_list.append(df_inv_sheet)
@@ -451,8 +590,10 @@ def run():
 
                 # df_s["Stock (Karton)"] = df_s["Stock PCS"] / df_s["Item Box"]
                 df_s["Stock (Karton)"] = (
-                    df_s["Stock PCS"] / df_s["Item Box"]
-                ).round(0).astype(int)
+                    (df_s["Stock PCS"] / df_s["Item Box"]) + 0.5
+                ).astype(int)
+                    # df_s["Stock PCS"] / df_s["Item Box"]
+                # ).round(0).astype(int)
                 df_s = df_s.sort_values("ORDER")
 
                 df_s = df_s.rename(columns={
@@ -526,8 +667,10 @@ def run():
             )
 
             df_stock_json["Stock (Karton)"] = (
-                df_stock_json["Stock PCS"] / df_stock_json["Item Box"]
-            ).round(0).astype(int)
+                (df_stock_json["Stock PCS"] / df_stock_json["Item Box"]) + 0.5
+            ).astype(int)
+                # df_stock_json["Stock PCS"] / df_stock_json["Item Box"]
+            # ).round(0).astype(int)
 
             df_stock_json = df_stock_json.sort_values("ORDER")
 
