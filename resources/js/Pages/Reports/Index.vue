@@ -268,16 +268,16 @@ const processExport = async (report) => {
         // 🔍 Cek apakah response JSON (error) atau file
         const contentType = res.headers["content-type"];
 
-        if (contentType && contentType.includes("application/json")) {
-            // ❌ Ini error dari backend
-            const text = await res.data.text();
-            const json = JSON.parse(text);
+        // if (contentType && contentType.includes("application/json")) {
+        //     // ❌ Ini error dari backend
+        //     const text = await res.data.text();
+        //     const json = JSON.parse(text);
 
-            console.error("ERROR BACKEND:", json);
-            alert(json.message || "Terjadi error");
+        //     console.error("ERROR BACKEND:", json);
+        //     alert(json.message || "Terjadi error");
 
-            return;
-        }
+        //     return;
+        // }
 
         // ✅ Ini file Excel → download
         const blob = new Blob([res.data], {
@@ -295,44 +295,81 @@ const processExport = async (report) => {
         link.remove();
         window.URL.revokeObjectURL(url);
     } catch (err) {
-        console.log("========== ERROR ==========");
         console.log(err);
 
-        if (err.response) {
-            console.log("STATUS:", err.response.status);
+        if (err.response?.data instanceof Blob) {
+            const text = await err.response.data.text();
 
-            // 🔥 kalau error berupa blob
-            if (err.response.data instanceof Blob) {
-                const text = await err.response.data.text();
-
-                console.log("BLOB ERROR TEXT:");
-                console.log(text);
-            } else {
-                console.log("DATA:", err.response.data);
-            }
+            console.log(text);
         }
     }
-    // baru edit
 
-    // lama bener
-    // catch (err) {
-    //     console.log("ERROR FULL:", err);
+    //LAMA BENER JGN DI HAPUS
+    // const processExport = async (report) => {
+    //     try {
+    //         console.log("REPORT:", report);
+    //         console.log("SHEET:", report.sheet_name);
 
-    //     // 🔥 Tangkap error dari backend (yang return JSON tapi kebungkus blob)
-    //     if (err.response && err.response.data) {
-    //         try {
-    //             const text = await err.response.data.text();
+    //         const res = await axios.post(
+    //             "/export/process",
+    //             {
+    //                 file_path: report.file_path,
+    //                 agent_id: report.user_id,
+    //                 agent_report_id: report.id,
+    //                 sheet: report.sheet_name || "Sheet1",
+    //             },
+    //             {
+    //                 responseType: "blob",
+    //             },
+    //         );
+
+    //         // 🔍 Cek apakah response JSON (error) atau file
+    //         const contentType = res.headers["content-type"];
+
+    //         if (contentType && contentType.includes("application/json")) {
+    //             // ❌ Ini error dari backend
+    //             const text = await res.data.text();
     //             const json = JSON.parse(text);
 
-    //             console.error("ERROR JSON:", json);
-    //             alert(json.message || "Export gagal");
-    //         } catch {
-    //             alert("Terjadi error tidak dikenal");
+    //             console.error("ERROR BACKEND:", json);
+    //             alert(json.message || "Terjadi error");
+
+    //             return;
     //         }
-    //     } else {
-    //         alert("Server tidak merespon");
+
+    //         // ✅ Ini file Excel → download
+    //         const blob = new Blob([res.data], {
+    //             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //         });
+
+    //         const url = window.URL.createObjectURL(blob);
+
+    //         const link = document.createElement("a");
+    //         link.href = url;
+    //         link.download = `RESULT_YURI_${Date.now()}.xlsx`;
+    //         document.body.appendChild(link);
+    //         link.click();
+
+    //         link.remove();
+    //         window.URL.revokeObjectURL(url);
+    //     } catch (err) {
+    //         console.log("========== ERROR ==========");
+    //         console.log(err);
+
+    //         if (err.response) {
+    //             console.log("STATUS:", err.response.status);
+
+    //             // 🔥 kalau error berupa blob
+    //             if (err.response.data instanceof Blob) {
+    //                 const text = await err.response.data.text();
+
+    //                 console.log("BLOB ERROR TEXT:");
+    //                 console.log(text);
+    //             } else {
+    //                 console.log("DATA:", err.response.data);
+    //             }
+    //         }
     //     }
-    // }
 };
 
 const processExportCMO = async (report) => {
@@ -341,7 +378,7 @@ const processExportCMO = async (report) => {
             "/export/process-cmo",
             {
                 // agent_id: report.user_id,
-                 report_id: report.id,
+                report_id: report.id,
             },
             {
                 responseType: "blob",
@@ -392,7 +429,7 @@ const processExportCMO = async (report) => {
     <Head title="Laporan Agent" />
 
     <AuthenticatedLayout>
-        <template #header>Laporan Bulanan Agent</template>
+        <template #header>Laporan Bulanan Agent TEST</template>
 
         <!-- <p>
             Role Anda saat ini:

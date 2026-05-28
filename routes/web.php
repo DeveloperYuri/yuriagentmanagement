@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AgentItemMappingController;
 use App\Http\Controllers\AgentReportController;
+use App\Http\Controllers\CustomeritemminstocksController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InventoryImportController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Models\Customeritemminstocks;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -113,7 +116,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/python/mapping-export', [PythonController::class, 'mappingExport'])
         ->name('python.mapping-export');
 
-
     Route::post('/export/process', [ExportController::class, 'process'])->name('exportprocess');
     Route::get('/export-mapping', [ExportController::class, 'exportMappingPage'])->name('exportMappingPage');;
     Route::post('/python/scan-file', [ExportController::class, 'scanFile']);
@@ -132,8 +134,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('mapping-produk.destroy');
 
     Route::post('/export/process-cmo', [ExportController::class, 'processCMO']);
-});
 
+    Route::resource('customer-item-min-stocks', CustomeritemminstocksController::class);
+
+    Route::resource('agent-item-mappings', AgentItemMappingController::class);
+
+    Route::post(
+        '/agent-item-mappings/import',
+        [AgentItemMappingController::class, 'import']
+    )->name('agent-item-mappings.import');
+});
 
 // Route::post('/python/scan-file', function () {
 //     return response()->json([

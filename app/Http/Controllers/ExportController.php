@@ -189,7 +189,7 @@ class ExportController extends Controller
             // 1. Ambil data dari request JSON (Bukan upload file lagi)
             // $filePath = $request->file_path;
             $filePath = storage_path('app/public/' . $request->file_path);
-            // ✅ TARO DI SINI
+
             $mapping = DB::table('mappings')
                 ->where('agent_id', $request->agent_id)
                 ->first();
@@ -228,6 +228,16 @@ class ExportController extends Controller
                 )
                 ->get();
 
+
+            // TAMBAH BARU CODE
+            $mappings = DB::table('agent_item_mappings')
+                ->select([
+                    'agent_sku',
+                    'item_code',
+                ])
+                ->get()
+                ->toArray();
+
             // 3. Payload untuk Python
             $payload = [
                 "file_path"   => $filePath,
@@ -235,6 +245,7 @@ class ExportController extends Controller
                 "mapping_inv" => $mappingInv,
                 "master_data" => $items,
                 "alias_data"  => $aliases,
+                "mapping_data" => $mappings, // TAMBAH BARU CODE
                 "nama_agent"  => $namaAgent,
             ];
 
@@ -259,24 +270,64 @@ class ExportController extends Controller
             //     ], 500);
             // }
 
-            $result = json_decode($process->getOutput(), true);
+            // TAMBAH BARU CODE
+            // return response()->json([
+            //     'raw_output' => $process->getOutput(),
+            //     'raw_error' => $process->getErrorOutput(),
+            // ]);
 
-            $invoiceData = $result['invoice_data'] ?? [];
-            $stockAgentData = $result['stock_agent_data'] ?? [];
+            $result = json_decode(
+                $process->getOutput(),
+                true
+            );
 
+            // =====================
+            // VALIDASI RESULT
+            // =====================
+            if (
+                !$result ||
+                !is_array($result)
+            ) {
+
+                return response()->json([
+                    'error' => 'Processor output invalid',
+                    'raw_output' =>
+                    $process->getOutput(),
+                    'raw_error' =>
+                    $process->getErrorOutput(),
+                ], 500);
+            }
+
+            // =====================
+            // AMBIL DATA
+            // =====================
+            $invoiceData =
+                $result['invoice_data'] ?? [];
+
+            $stockAgentData =
+                $result['stock_agent_data'] ?? [];
+
+            // =====================
+            // PERIODE
+            // =====================
             $periodeDate = null;
 
             if (!empty($invoiceData)) {
 
                 $firstDate =
-                    $invoiceData[0]['Tanggal Invoice'] ?? null;
+                    $invoiceData[0]['Tanggal Invoice']
+                    ?? null;
 
                 if ($firstDate) {
 
-                    $periodeDate = Carbon::parse($firstDate);
+                    $periodeDate =
+                        Carbon::parse($firstDate);
                 }
             }
 
+            // =====================
+            // SAVE INVOICE
+            // =====================
             foreach ($invoiceData as $row) {
 
                 AgentExportReport::create([
@@ -296,76 +347,129 @@ class ExportController extends Controller
                     $row['Alamat Customer'] ?? null,
 
                     'nomor_telepon_customer' =>
-                    $row['Nomor Telepon/HP Customer'] ?? null,
+                    $row['Nomor Telepon/HP Customer']
+                        ?? null,
 
                     'invoice_nomor_agen' =>
-                    $row['Invoice Nomor Agen'] ?? null,
+                    $row['Invoice Nomor Agen']
+                        ?? null,
 
                     'tanggal_invoice' =>
-                    $row['Tanggal Invoice'] ?? null,
+                    $row['Tanggal Invoice']
+                        ?? null,
 
                     'tipe_customer' =>
-                    $row['Tipe Customer'] ?? null,
+                    $row['Tipe Customer']
+                        ?? null,
 
                     'sales' =>
-                    $row['Sales'] ?? null,
+                    $row['Sales']
+                        ?? null,
 
                     'sku_kode_agen' =>
-                    $row['SKU Kode Agen'] ?? null,
+                    $row['SKU Kode Agen']
+                        ?? null,
 
                     'nama_sku' =>
-                    $row['Nama SKU'] ?? null,
+                    $row['Nama SKU']
+                        ?? null,
 
                     'qty_terjual_pcs' =>
-                    (float) ($row['Qty Terjual (PCS)'] ?: 0),
+                    (float) (
+                        $row['Qty Terjual (PCS)']
+                        ?? 0
+                    ),
 
                     'diskon_1_reguler' =>
-                    (float) ($row['% Diskon 1 (Reguler)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 1 (Reguler)']
+                        ?? 0
+                    ),
 
                     'diskon_2_cash' =>
-                    (float) ($row['% Diskon 2 (Cash)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 2 (Cash)']
+                        ?? 0
+                    ),
 
                     'diskon_3_dc_free' =>
-                    (float) ($row['% Diskon 3 (DC Free)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 3 (DC Free)']
+                        ?? 0
+                    ),
 
                     'diskon_4_promo_1' =>
-                    (float) ($row['% Diskon 4 (Promo 1)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 4 (Promo 1)']
+                        ?? 0
+                    ),
 
                     'diskon_5_promo_2' =>
-                    (float) ($row['% Diskon 5 (Promo 2)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 5 (Promo 2)']
+                        ?? 0
+                    ),
 
                     'diskon_6_rp' =>
-                    (float) ($row['% Diskon 6 (Rp)'] ?: 0),
+                    (float) (
+                        $row['% Diskon 6 (Rp)']
+                        ?? 0
+                    ),
 
                     'quantity_bonus' =>
-                    (float) ($row['Quantity Bonus'] ?: 0),
+                    (float) (
+                        $row['Quantity Bonus']
+                        ?? 0
+                    ),
 
                     'rafraksi' =>
-                    (float) ($row['Rafraksi'] ?: 0),
+                    (float) (
+                        $row['Rafraksi']
+                        ?? 0
+                    ),
 
                     'total_invoice_value' =>
-                    (float) ($row['Total Invoice Value'] ?: 0),
+                    (float) (
+                        $row['Total Invoice Value']
+                        ?? 0
+                    ),
 
                     'match_item' =>
-                    $row['MATCH ITEM'] ?? null,
+                    $row['MATCH_STATUS']
+                        ?? null,
+
+                    'kode_sku_jim' =>
+                    $row['Item Code']
+                        ?? null,
+
+                    'item_name_jim' =>
+                    $row['Item Name']
+                        ?? null,
                 ]);
             }
 
+            // =====================
+            // SAVE STOCK
+            // =====================
             foreach ($stockAgentData as $row) {
 
                 AgentExportStock::create([
 
                     'kode_sku_agent' =>
-                    $row['Kode SKU Agent'] ?? null,
+                    $row['Kode SKU Agent']
+                        ?? null,
 
                     'kode_sku_jim' =>
-                    $row['Kode SKU JIM'] ?? null,
+                    $row['Item Code']
+                        ?? null,
 
                     'item_name_jim' =>
-                    $row['Item Name JIM'] ?? null,
+                    $row['Item Name']
+                        ?? null,
 
                     'stock_karton' =>
-                    $row['Stock (Karton)'] ?? 0,
+                    $row['Stock PCS']
+                        ?? 0,
 
                     'bulan' =>
                     $periodeDate?->month,
@@ -378,12 +482,32 @@ class ExportController extends Controller
 
                     'agent_id' =>
                     $request->agent_id,
-
                 ]);
             }
 
-            $excelBinary = base64_decode($result['excel_base64']);
+            // =====================
+            // EXCEL
+            // =====================
+            $excelBase64 =
+                $result['excel_base64']
+                ?? '';
 
+            if (!$excelBase64) {
+
+                return response()->json([
+                    'error' =>
+                    'Excel kosong',
+                    'result' =>
+                    $result,
+                ], 500);
+            }
+
+            $excelBinary =
+                base64_decode($excelBase64);
+
+            // =====================
+            // DOWNLOAD
+            // =====================
             return response($excelBinary)
                 ->header(
                     'Content-Type',
@@ -405,17 +529,280 @@ class ExportController extends Controller
         }
     }
 
+
+    // PROSES LAMA BENER JGN DI APA2in YA
+    // public function process(Request $request)
+    // {
+    //     try {
+    //         // 1. Ambil data dari request JSON (Bukan upload file lagi)
+    //         // $filePath = $request->file_path;
+    //         $filePath = storage_path('app/public/' . $request->file_path);
+
+    //         $mapping = DB::table('mappings')
+    //             ->where('agent_id', $request->agent_id)
+    //             ->first();
+
+    //         $aliases = DB::table('item_aliases')
+    //             ->select('agent_name', 'clean_name', 'master_name')
+    //             ->get();
+
+    //         if (!$mapping) {
+    //             return response()->json([
+    //                 'error' => 'Mapping belum ada untuk report ini'
+    //             ], 400);
+    //         }
+
+    //         $namaAgent = $mapping->nama_agent ?? '';
+
+    //         $mappingData = json_decode($mapping->mapping_json, true);
+
+    //         $mappingJim = $mappingData['jim'] ?? [];
+    //         $mappingInv = $mappingData['invoice'] ?? [];
+
+    //         // $mappingJim = $request->mapping_jim;
+    //         // $mappingInv = $request->mapping_inv;
+
+    //         // Validasi dasar
+    //         if (!file_exists($filePath)) {
+    //             return response()->json(['error' => 'File fisik tidak ditemukan di server: ' . $filePath], 404);
+    //         }
+
+    //         // 2. Ambil Master Data dari DB
+    //         $items = DB::table('items')
+    //             ->select(
+    //                 'item_code',
+    //                 'item_name',
+    //                 'item_per_box'
+    //             )
+    //             ->get();
+
+
+    //         // TAMBAH BARU CODE
+    //         $mappings = DB::table('agent_item_mappings')
+    //             ->select([
+    //                 'agent_sku',
+    //                 'item_code',
+    //             ])
+    //             ->get()
+    //             ->toArray();
+
+    //         // 3. Payload untuk Python
+    //         $payload = [
+    //             "file_path"   => $filePath,
+    //             "mapping_jim" => $mappingJim,
+    //             "mapping_inv" => $mappingInv,
+    //             "master_data" => $items,
+    //             "alias_data"  => $aliases,
+    //             "mapping_data" => $mappings, // TAMBAH BARU CODE
+    //             "nama_agent"  => $namaAgent,
+    //         ];
+
+    //         // 4. Eksekusi Python
+    //         $process = new \Symfony\Component\Process\Process(['python3', base_path('scripts/processor.py')]);
+    //         $process->setInput(json_encode($payload));
+    //         $process->setTimeout(300);
+    //         $process->run();
+
+    //         if (!$process->isSuccessful()) {
+    //             return response()->json([
+    //                 'error' => 'Python Processor Gagal',
+    //                 'detail' => $process->getErrorOutput(),
+    //                 'output' => $process->getOutput(),
+    //             ], 500);
+    //         }
+
+    //         // if (!$process->isSuccessful()) {
+    //         //     return response()->json([
+    //         //         'error' => 'Python Processor Gagal',
+    //         //         'detail' => $process->getErrorOutput()
+    //         //     ], 500);
+    //         // }
+
+    //         // TAMBAH BARU CODE
+    //         // return response()->json([
+    //         //     'raw_output' => $process->getOutput(),
+    //         //     'raw_error' => $process->getErrorOutput(),
+    //         // ]);
+
+    //         $result = json_decode($process->getOutput(), true);
+
+    //         $invoiceData = $result['invoice_data'] ?? [];
+    //         $stockAgentData = $result['stock_agent_data'] ?? [];
+
+    //         $periodeDate = null;
+
+    //         if (!empty($invoiceData)) {
+
+    //             $firstDate =
+    //                 $invoiceData[0]['Tanggal Invoice'] ?? null;
+
+    //             if ($firstDate) {
+
+    //                 $periodeDate = Carbon::parse($firstDate);
+    //             }
+    //         }
+
+    //         foreach ($invoiceData as $row) {
+
+    //             AgentExportReport::create([
+
+    //                 'sheet_name' => 'invoice',
+
+    //                 'nama_agen' =>
+    //                 $row['Nama Agen'] ?? null,
+
+    //                 'kode_customer' =>
+    //                 $row['Kode Customer'] ?? null,
+
+    //                 'nama_customer' =>
+    //                 $row['Nama Customer'] ?? null,
+
+    //                 'alamat_customer' =>
+    //                 $row['Alamat Customer'] ?? null,
+
+    //                 'nomor_telepon_customer' =>
+    //                 $row['Nomor Telepon/HP Customer'] ?? null,
+
+    //                 'invoice_nomor_agen' =>
+    //                 $row['Invoice Nomor Agen'] ?? null,
+
+    //                 'tanggal_invoice' =>
+    //                 $row['Tanggal Invoice'] ?? null,
+
+    //                 'tipe_customer' =>
+    //                 $row['Tipe Customer'] ?? null,
+
+    //                 'sales' =>
+    //                 $row['Sales'] ?? null,
+
+    //                 'sku_kode_agen' =>
+    //                 $row['SKU Kode Agen'] ?? null,
+
+    //                 'nama_sku' =>
+    //                 $row['Nama SKU'] ?? null,
+
+    //                 'qty_terjual_pcs' =>
+    //                 (float) ($row['Qty Terjual (PCS)'] ?: 0),
+
+    //                 'diskon_1_reguler' =>
+    //                 (float) ($row['% Diskon 1 (Reguler)'] ?: 0),
+
+    //                 'diskon_2_cash' =>
+    //                 (float) ($row['% Diskon 2 (Cash)'] ?: 0),
+
+    //                 'diskon_3_dc_free' =>
+    //                 (float) ($row['% Diskon 3 (DC Free)'] ?: 0),
+
+    //                 'diskon_4_promo_1' =>
+    //                 (float) ($row['% Diskon 4 (Promo 1)'] ?: 0),
+
+    //                 'diskon_5_promo_2' =>
+    //                 (float) ($row['% Diskon 5 (Promo 2)'] ?: 0),
+
+    //                 'diskon_6_rp' =>
+    //                 (float) ($row['% Diskon 6 (Rp)'] ?: 0),
+
+    //                 'quantity_bonus' =>
+    //                 (float) ($row['Quantity Bonus'] ?: 0),
+
+    //                 'rafraksi' =>
+    //                 (float) ($row['Rafraksi'] ?: 0),
+
+    //                 'total_invoice_value' =>
+    //                 (float) ($row['Total Invoice Value'] ?: 0),
+
+    //                 'match_item' =>
+    //                 $row['MATCH ITEM'] ?? null,
+    //             ]);
+    //         }
+
+    //         foreach ($stockAgentData as $row) {
+
+    //             AgentExportStock::create([
+
+    //                 'kode_sku_agent' =>
+    //                 $row['Kode SKU Agent'] ?? null,
+
+    //                 'kode_sku_jim' =>
+    //                 $row['Kode SKU JIM'] ?? null,
+
+    //                 'item_name_jim' =>
+    //                 $row['Item Name JIM'] ?? null,
+
+    //                 'stock_karton' =>
+    //                 $row['Stock (Karton)'] ?? 0,
+
+    //                 'bulan' =>
+    //                 $periodeDate?->month,
+
+    //                 'tahun' =>
+    //                 $periodeDate?->year,
+
+    //                 'periode' =>
+    //                 $periodeDate?->format('Y-m'),
+
+    //                 'agent_id' =>
+    //                 $request->agent_id,
+
+    //             ]);
+    //         }
+
+    //         $excelBinary = base64_decode($result['excel_base64']);
+
+    //         return response($excelBinary)
+    //             ->header(
+    //                 'Content-Type',
+    //                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    //             )
+    //             ->header(
+    //                 'Content-Disposition',
+    //                 'attachment; filename="Hasil_Mapping_3_Sheet.xlsx"'
+    //             );
+
+    //         // dd($result);
+
+    //         // 5. Return ke Vue sebagai Download
+    //         // return response($process->getOutput())
+    //         //     ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    //         //     ->header('Content-Disposition', 'attachment; filename="Hasil_Mapping_3_Sheet.xlsx"');
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    // public function processCMO(Request $request)
+    // {
+    //     $report = AgentReport::find($request->report_id);
+
+    //     return Excel::download(
+    //         new CMOExport($report->id),
+    //         'EXPORT_CMO.xlsx'
+    //     );
+    //     // return Excel::download(
+    //     //     new CMOExport($request->agent_id),
+    //     //     'EXPORT_CMO.xlsx'
+    //     // );
+    // }
+
     public function processCMO(Request $request)
     {
-        $report = AgentReport::find($request->report_id);
+        try {
 
-        return Excel::download(
-            new CMOExport($report->id),
-            'EXPORT_CMO.xlsx'
-        );
-        // return Excel::download(
-        //     new CMOExport($request->agent_id),
-        //     'EXPORT_CMO.xlsx'
-        // );
+            Log::info('START EXPORT CMO');
+
+            $report = AgentReport::find($request->report_id);
+
+            return Excel::download(
+                new CMOExport($report->id),
+                'EXPORT_CMO.xlsx'
+            );
+        } catch (\Throwable $e) {
+
+            Log::error($e);
+
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

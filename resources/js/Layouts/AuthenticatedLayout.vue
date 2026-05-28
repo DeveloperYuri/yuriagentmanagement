@@ -36,7 +36,9 @@ onMounted(() => {
         route().current("users.*") ||
         route().current("items.*") ||
         route().current("itemsgroups.*") ||
-        route().current("mappingprodukps.*")
+        route().current("mappingproduk.*") ||
+        route().current("customer-item-min-stocks.*") ||
+        route().current("agent-item-mappings.*")
     ) {
         isSettingsOpen.value = true;
     }
@@ -304,6 +306,30 @@ const toggleSettings = () => {
                             class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
                         >
                             Mapping Produk
+                        </Link>
+
+                        <Link
+                            :href="route('agent-item-mappings.index')"
+                            :class="
+                                route().current('agent-item-mappings.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Mapping Produk by Code
+                        </Link>
+
+                        <Link
+                            :href="route('customer-item-min-stocks.index')"
+                            :class="
+                                route().current('customer-item-min-stocks.*')
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'hover:bg-gray-700 hover:text-white'
+                            "
+                            class="block px-3 py-2 text-sm rounded-md transition-all duration-200"
+                        >
+                            Customer Item Min Stock
                         </Link>
 
                         <Link

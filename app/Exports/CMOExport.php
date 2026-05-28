@@ -11,8 +11,10 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use App\Models\AgentReport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 
-class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
+class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithColumnFormatting
 {
     // protected $agentId;
     protected $report;
@@ -74,12 +76,12 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'AGANOL LAVENDER /3,7LT' THEN 4
                     WHEN 'AGANOL LAVENDER /20L' THEN 5
                     WHEN 'AGANOL LAVENDER /600ML + BUY 1 GET 1' THEN 6
-                    WHEN 'AGANOL LAVENDER  /600ML' THEN 7
+                    WHEN 'AGANOL LAVENDER /600ML' THEN 7
                     WHEN 'AGANOL FLORAL /80ML' THEN 8
                     WHEN 'AGANOL FLORAL /1L' THEN 9
                     WHEN 'AGANOL LEMON FRESH /1L' THEN 10
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /1L' THEN 11
-                    WHEN 'AGANOL APPLE FRESH  /2L' THEN 12
+                    WHEN 'AGANOL APPLE FRESH /2L' THEN 12
                     WHEN 'AGANOL FLORAL /2L' THEN 13
                     WHEN 'AGANOL LEMON FRESH /2L' THEN 14
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /2L' THEN 15
@@ -92,7 +94,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'AGANOL /20L' THEN 22
                     WHEN 'AGANOL APPLE /20L' THEN 23
                     WHEN 'AGANOL FLORAL /20L' THEN 24
-                    WHEN 'AGANOL LEMON  /20L' THEN 25
+                    WHEN 'AGANOL LEMON /20L' THEN 25
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /20L' THEN 26
                     WHEN 'AGANOL /200L' THEN 27
                     WHEN 'AGANOL MORNING FRESH /200L' THEN 28
@@ -100,18 +102,18 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'AGANOL LEMON FRESH 3S /600ML' THEN 30
                     WHEN 'AGANOL MORNING FRESH 3S /600ML' THEN 31
                     WHEN 'AGANOL LAVENDER 3S /600ML' THEN 32
-                    WHEN 'AGANOL FLORAL  /3LT' THEN 33
-                    WHEN 'AGANOL FLORAL  /600ML (24 PCS)' THEN 34
+                    WHEN 'AGANOL FLORAL /3LT' THEN 33
+                    WHEN 'AGANOL FLORAL /600ML (24 PCS)' THEN 34
                     WHEN 'AGANOL FLORAL /600ML' THEN 35
                     WHEN 'AGANOL LEMON FRESH /600ML' THEN 36
-                    WHEN 'AGANOL LEMON FRESH  /600ML' THEN 37
+                    WHEN 'AGANOL LEMON FRESH /600ML' THEN 37
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /600ML' THEN 38
-                    WHEN 'AGANOL MORNING FRESH  /600ML' THEN 39
+                    WHEN 'AGANOL MORNING FRESH /600ML' THEN 39
                     WHEN 'AGANOL PINE FRESH 2L +1L' THEN 40
                     WHEN 'AGANOL PINE FRESH  /2L' THEN 41
                     WHEN 'BABY SOFT /1L' THEN 42
                     WHEN 'BABY SOFT /3,7LT' THEN 43
-                    WHEN 'BABY SOFT   /5L' THEN 44
+                    WHEN 'BABY SOFT /5L' THEN 44
                     WHEN 'BABY SOFT EXTRA JRG/20L' THEN 45
                     WHEN 'BABY SOFT /410ML' THEN 46
                     WHEN 'YURI BATHROOM CLEANER /500ML' THEN 47
@@ -140,9 +142,9 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI BLEACH LEMON  /3,7LT' THEN 70
                     WHEN 'YURI BLEACH MORNING FRESH /5L' THEN 71
                     WHEN 'YURI BLEACH LEMON /5L' THEN 72
-                    WHEN 'CAP POHON TEAK OIL  /1L' THEN 73
-                    WHEN 'CAP POHON TEAK OIL  /3,7LT' THEN 74
-                    WHEN 'CAP POHON TEAK OIL  /20L' THEN 75
+                    WHEN 'CAP POHON TEAK OIL /1L' THEN 73
+                    WHEN 'CAP POHON TEAK OIL /3,7LT' THEN 74
+                    WHEN 'CAP POHON TEAK OIL /20L' THEN 75
                     WHEN 'BABYDEE BODYWASH & SHAMPOO MILK /50ML' THEN 76
                     WHEN 'BABYDEE BODYWASH & SHAMPOO HONEY /50ML' THEN 77
                     WHEN 'BABYDEE BODYWASH & SHAMPOO MILK /100ML' THEN 78
@@ -221,11 +223,11 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'DEEDEE SHAMPOO GRAPE /45ML' THEN 151
                     WHEN 'DEEDEE SHAMPOO ORANGE /45ML' THEN 152
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY /45ML' THEN 153
-                    WHEN 'DEEDEE SHAMPOO APPLE REFILL/250ML' THEN 154
+                    WHEN 'DEEDEE SHAMPOO APPLE REFILL /250ML' THEN 154
                     WHEN 'DEEDEE SHAMPOO APPLE REFILL /250ML FREE GIFT' THEN 155
-                    WHEN 'DEEDEE SHAMPOO GRAPE REFILL/250ML' THEN 156
+                    WHEN 'DEEDEE SHAMPOO GRAPE REFILL /250ML' THEN 156
                     WHEN 'DEEDEE SHAMPOO GRAPE REFILL /250ML FREE GIFT' THEN 157
-                    WHEN 'DEEDEE SHAMPOO ORANGE REFILL/250ML' THEN 158
+                    WHEN 'DEEDEE SHAMPOO ORANGE REFILL /250ML' THEN 158
                     WHEN 'DEEDEE SHAMPOO ORANGE REFILL /250ML FREE GIFT' THEN 159
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY REFILL/250ML' THEN 160
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY REFILL /250ML FREE GIFT' THEN 161
@@ -237,10 +239,10 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'DEEDEE SHAMPOO GRAPE /200ML' THEN 167
                     WHEN 'DEEDEE SHAMPOO ORANGE /200ML' THEN 168
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY /200ML' THEN 169
-                    WHEN 'DEEDEE SHAMPOO  APPLE /5ML' THEN 170
-                    WHEN 'DEEDEE SHAMPOO  GRAPE /5ML' THEN 171
-                    WHEN 'DEEDEE SHAMPOO  ORANGE /5ML' THEN 172
-                    WHEN 'DEEDEE SHAMPOO  STRAWBERRY /5ML' THEN 173
+                    WHEN 'DEEDEE SHAMPOO APPLE /5ML' THEN 170
+                    WHEN 'DEEDEE SHAMPOO GRAPE /5ML' THEN 171
+                    WHEN 'DEEDEE SHAMPOO ORANGE /5ML' THEN 172
+                    WHEN 'DEEDEE SHAMPOO STRAWBERRY /5ML' THEN 173
                     WHEN 'DEEDEE SHAMPOO GREEN TEA PUMP/200ML' THEN 174
                     WHEN 'DEEDEE SHAMPOO ROSE PUMP/200ML' THEN 175
                     WHEN 'DEEDEE FACIAL WASH GRAPE /100GR' THEN 176
@@ -322,7 +324,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH LILAC /20L' THEN 252
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /410ML' THEN 253
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /410ML' THEN 254
-                    WHEN 'YURI GLASS CLEANER FOAMING LILAC  /410ML' THEN 255
+                    WHEN 'YURI GLASS CLEANER FOAMING LILAC /410ML' THEN 255
                     WHEN 'YURI HAND SOAP  GREEN TEA /410ML' THEN 256
                     WHEN 'YURI HAND SOAP FOAMING GREEN TEA /410ML' THEN 257
                     WHEN 'YURI HAND SOAP ROSE /410ML' THEN 258
@@ -353,11 +355,11 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI HAND SOAP STRAWBERRY 2S /375ML' THEN 283
                     WHEN 'YURI HAND SOAP LAVENDER  PUMP/410ML' THEN 284
                     WHEN 'YURI HAND SOAP FOAMING LAVENDER PUMP/410ML' THEN 285
-                    WHEN 'YURI HAND SOAP  LEMON PUMP/410ML' THEN 286
-                    WHEN 'YURI HAND SOAP  STRAWBERRY PUMP/410ML' THEN 287
-                    WHEN 'YURI HAND SOAP  PEACH PUMP/410ML' THEN 288
-                    WHEN 'YURI HAND SOAP  GUAVA PUMP/410ML' THEN 289
-                    WHEN 'YURI HAND SOAP  PEACH /3,7LT' THEN 290
+                    WHEN 'YURI HAND SOAP LEMON PUMP/410ML' THEN 286
+                    WHEN 'YURI HAND SOAP STRAWBERRY PUMP/410ML' THEN 287
+                    WHEN 'YURI HAND SOAP PEACH PUMP/410ML' THEN 288
+                    WHEN 'YURI HAND SOAP GUAVA PUMP/410ML' THEN 289
+                    WHEN 'YURI HAND SOAP PEACH /3,7LT' THEN 290
                     WHEN 'YURI HAND SOAP APPLE  REFILL/410ML' THEN 291
                     WHEN 'YURI HAND SOAP GRAPES  REFILL/410ML' THEN 292
                     WHEN 'YURI HAND SOAP LEMON  REFILL/410ML' THEN 293
@@ -389,12 +391,12 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI HAND SOAP STRAWBERRY 2S 375ML' THEN 319
                     WHEN 'LIGENT BABY PUMP /450ML FREE GIFT' THEN 320
                     WHEN 'LIGENT BABY POUCH /410ML' THEN 321
-                    WHEN 'LIGENT LIME  /80ML' THEN 322
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT /80ML' THEN 323
+                    WHEN 'LIGENT LIME /80ML' THEN 322
+                    WHEN 'LIGENT BIOLIME & BERGAMOT /80ML' THEN 323
                     WHEN 'LIGENT LEMON /80ML' THEN 324
                     WHEN 'LIGENT GRAPEFRUIT /80ML' THEN 325
                     WHEN 'LIGENT BIO LIME & BERGAMOT FLIPTOP/  1 L' THEN 326
-                    WHEN 'LIGENT BIO  LEMON & BERGAMOT  FLIPTOP/  1 L' THEN 327
+                    WHEN 'LIGENT BIO LEMON & BERGAMOT FLIPTOP/  1 L' THEN 327
                     WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT  FLIPTOP/  1 L' THEN 328
                     WHEN 'LIGENT BIO LIME & BERGAMOT /600ML' THEN 329
                     WHEN 'LIGENT BIO LEMON & BERGAMOT BOTTLE /600ML' THEN 330
@@ -419,15 +421,15 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'LIGENT (P)-LEMON /1000ML' THEN 349
                     WHEN 'LIGENT PUMP LEMON 1L + CUP COVER' THEN 350
                     WHEN 'LIGENT BIO (P)- LEMON & BERGAMOT /1000ML' THEN 351
-                    WHEN 'LIGENT PANDAN  /1L' THEN 352
-                    WHEN 'LIGENT LEMON  /1L' THEN 353
+                    WHEN 'LIGENT PANDAN /1L' THEN 352
+                    WHEN 'LIGENT LEMON /1L' THEN 353
                     WHEN 'LIGENT GRAPEFRUIT  /1L' THEN 354
                     WHEN 'LIGENT (P)-GRAPEFRUIT /1000ML' THEN 355
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + FREE GIFT' THEN 356
                     WHEN 'LIGENT BIO (P)-GRAPEFRUIT & BERGAMOT /1000ML' THEN 357
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + CUP COVER' THEN 358
-                    WHEN 'LIGENT LIME  /3,7LT' THEN 359
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT / 3.7L' THEN 360
+                    WHEN 'LIGENT LIME /3,7LT' THEN 359
+                    WHEN 'LIGENT BIO LIME & BERGAMOT / 3.7L' THEN 360
                     WHEN 'LIGENT LEMON  /3,7LT' THEN 361
                     WHEN 'LIGENTBIO - LEMON & BERGAMOT/ 3,7LT' THEN 362
                     WHEN 'LIGENT GRAPEFRUIT  /3,7LT' THEN 363
@@ -439,37 +441,37 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'LIGENT LIME/600ML FREE GIFT (SCAN 2X)' THEN 369
                     WHEN 'LIGENT LEMON /600ML FREE GIFT  (SCAN 2X)' THEN 370
                     WHEN 'LIGENT GRAPE FRUIT /600ML FREE GIFT (SCAN 2X)' THEN 371
-                    WHEN 'LIGENT LIME  1L PUMP +REFILL' THEN 372
-                    WHEN 'LIGENT LEMON  1L PUMP +REFILL' THEN 373
+                    WHEN 'LIGENT LIME 1L PUMP +REFILL' THEN 372
+                    WHEN 'LIGENT LEMON 1L PUMP +REFILL' THEN 373
                     WHEN 'LIGENT GRAPEFRUIT  1L PUMP +REFILL' THEN 374
-                    WHEN 'LIGENT LIME  /20L' THEN 375
+                    WHEN 'LIGENT LIME /20L' THEN 375
                     WHEN 'LIGENT BIO- LIME & BERGAMOT JRG/ 20LT' THEN 376
-                    WHEN 'LIGENT LEMON  /20L' THEN 377
+                    WHEN 'LIGENT LEMON /20L' THEN 377
                     WHEN 'LIGENT BIO - LEMON & BERGAMOT JRG/ 20LT' THEN 378
                     WHEN 'LIGENT GRAPEFRUIT  /20L' THEN 379
                     WHEN 'LIGENT BIO - GRAPE FRUIT & BERGAMOT JRG/20LT' THEN 380
                     WHEN 'LIGENT LIME /20L' THEN 381
                     WHEN 'LIGENT LEMON /200L' THEN 382
                     WHEN 'LIGENT ORANGE /200L' THEN 383
-                    WHEN 'LIGENT LIME  /180ML' THEN 384
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT /180ML' THEN 385
+                    WHEN 'LIGENT LIME /180ML' THEN 384
+                    WHEN 'LIGENT BIO LIME & BERGAMOT /180ML' THEN 385
                     WHEN 'LIGENT LEMON  /180ML' THEN 386
                     WHEN 'LIGENT BIO LEMON & BERGAMOT   /180ML' THEN 387
-                    WHEN 'LIGENT GRAPEFRUIT  /180ML' THEN 388
+                    WHEN 'LIGENT GRAPEFRUIT /180ML' THEN 388
                     WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT /180ML' THEN 389
-                    WHEN 'LIGENT LIME  /630ML' THEN 390
-                    WHEN 'LIGENT LIME  /600ML' THEN 391
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT  /600ML' THEN 392
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 393
-                    WHEN 'LIGENT LEMON  /630ML' THEN 394
-                    WHEN 'LIGENT LEMON  /600ML' THEN 395
-                    WHEN 'LIGENT BIO  LEMON & BERGAMOT  /600ML' THEN 396
-                    WHEN 'LIGENT BIO  LEMON & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 397
+                    WHEN 'LIGENT LIME /630ML' THEN 390
+                    WHEN 'LIGENT LIME /600ML' THEN 391
+                    WHEN 'LIGENT BIO LIME & BERGAMOT  /600ML' THEN 392
+                    WHEN 'LIGENT BIO LIME & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 393
+                    WHEN 'LIGENT LEMON /630ML' THEN 394
+                    WHEN 'LIGENT LEMON /600ML' THEN 395
+                    WHEN 'LIGENT BIO LEMON & BERGAMOT  /600ML' THEN 396
+                    WHEN 'LIGENT BIO LEMON & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 397
                     WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT /600ML' THEN 398
-                    WHEN 'LIGENT GRAPEFRUIT  /630ML' THEN 399
-                    WHEN 'LIGENT GRAPEFRUIT  /600ML' THEN 400
-                    WHEN 'LIGENT BIO  GRAPEFRUIT & BERGAMOT /600ML' THEN 401
-                    WHEN 'LIGENT BIO  GRAPEFRUIT & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 402
+                    WHEN 'LIGENT GRAPEFRUIT /630ML' THEN 399
+                    WHEN 'LIGENT GRAPEFRUIT /600ML' THEN 400
+                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT /600ML' THEN 401
+                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT /600ML BELI 1 GRATIS 1' THEN 402
                     WHEN 'LIGENT BIO LEMON & BERGAMOT /600ML' THEN 403
                     WHEN 'LIGENT LIME 2S 630ML' THEN 404
                     WHEN 'LIGENT LEMON 2S 630ML' THEN 405
@@ -493,7 +495,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURIMATIC 1.6KG LOW SUD + TRIL SPRAY 500ML' THEN 423
                     WHEN 'YURIMATIC TOUGH STAIN  /3,7LT' THEN 424
                     WHEN 'YURIMATIC COLOUR  /3,7LT' THEN 425
-                    WHEN 'YURIMATIC LOW SUDS  /3,7LT' THEN 426
+                    WHEN 'YURIMATIC LOW SUDS /3,7LT' THEN 426
                     WHEN 'YURIMATIC TOUGH STAIN 2S 1.6KG + LIGENT 80ML' THEN 427
                     WHEN 'YURIMATIC COLOUR 2S 1.6KG + LIGENT 80ML' THEN 428
                     WHEN 'YURIMATIC LOW SUDS 2S 1.6KG + LIGENT 80ML' THEN 429
@@ -508,16 +510,16 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURIMATIC COLOUR /1.6KG' THEN 438
                     WHEN 'YURIMATIC LOW SUDS /1.6KG' THEN 439
                     WHEN 'YURIMATIC TOUGH STAIN  /2.8KG' THEN 440
-                    WHEN 'YURIMATIC COLOUR  /2.8KG' THEN 441
-                    WHEN 'YURIMATIC LOW SUDS  /2.8KG' THEN 442
+                    WHEN 'YURIMATIC COLOUR /2.8KG' THEN 441
+                    WHEN 'YURIMATIC LOW SUDS /2.8KG' THEN 442
                     WHEN 'YURI MATIC TOUGH STAINS 2,8 KG + BS REFIL 410 ML' THEN 443
                     WHEN 'YURI MATIC COLOUR 2.8 KG + BS REFILL 410ML' THEN 444
                     WHEN 'YURI MATIC LOW SUDS 2,8 KG + BS REFILL 410 ML' THEN 445
                     WHEN 'YURIMATIC TOUGH STAIN /630GR' THEN 446
                     WHEN 'YURIMATIC COLOUR /630GR' THEN 447
                     WHEN 'YURIMATIC LOW SUDS /630GR' THEN 448
-                    WHEN 'NEU-SOL   /500ML' THEN 449
-                    WHEN 'NEU-SOL   /1L' THEN 450
+                    WHEN 'NEU-SOL /500ML' THEN 449
+                    WHEN 'NEU-SOL /1L' THEN 450
                     WHEN 'PAKET BERSIH-BERSIH' THEN 451
                     WHEN 'PAKET BABY DEE HAMPER' THEN 452
                     WHEN 'PAKET DEE DEE HAMPER' THEN 453
@@ -533,20 +535,20 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'PORSTEX UNGU(WB) /500ML' THEN 463
                     WHEN 'PORSTEX UNGU(WB) /1L' THEN 464
                     WHEN 'PORSTEX UNGU 1000ML FREE BIOSOFT HIJAB DETERGENT 40ML' THEN 465
-                    WHEN 'PORSTEX UNGU(WB)  /2L' THEN 466
-                    WHEN 'PORSTEX UNGU(WB)  /3,7LT' THEN 467
-                    WHEN 'PORSTEX UNGU(WB)  /20L' THEN 468
+                    WHEN 'PORSTEX UNGU(WB) /2L' THEN 466
+                    WHEN 'PORSTEX UNGU(WB) /3,7LT' THEN 467
+                    WHEN 'PORSTEX UNGU(WB) /20L' THEN 468
                     WHEN 'PAKET LAUNDRY ROMANTIC BLUE' THEN 469
                     WHEN 'PAKET PRJ BATHROOM CLEANER' THEN 470
                     WHEN 'PAKET PRJ KITCHEN CLEANER' THEN 471
                     WHEN 'YURI PORSTEX REGULER OCEAN BLUE / 160ML EXTRA 40ML' THEN 472
-                    WHEN 'PORSTEX REGULAR  LILAC FRESH /700ML' THEN 473
+                    WHEN 'PORSTEX REGULAR LILAC FRESH /700ML' THEN 473
                     WHEN 'PORSTEX REGULAR OCEAN BLUE /700ML' THEN 474
                     WHEN 'PAKET YURI DISPLAY POUCH' THEN 475
                     WHEN 'PAKET YURI DISPLAY' THEN 476
                     WHEN 'YURISOL /1L' THEN 477
-                    WHEN 'YURISOL   /18LT' THEN 478
-                    WHEN 'YURISOL   /200LT' THEN 479
+                    WHEN 'YURISOL /18LT' THEN 478
+                    WHEN 'YURISOL /200LT' THEN 479
                     WHEN 'YURISOL /630ML' THEN 480
                     WHEN 'TAF KITCHEN CLEANER SPRAY /500ML' THEN 481
                     WHEN 'TAF KITCHEN CLEANER REFILL /500ML' THEN 482
@@ -556,15 +558,15 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'TAF LEMON & LIME FLIPTOP /500ML' THEN 486
                     WHEN 'TAF KITCHEN CLEANER 500ML SPRAY +RF /500ML' THEN 487
                     WHEN 'TAF KITCHEN CLEANER  /375ML' THEN 488
-                    WHEN 'TAF FRESH BLUE  /3,7LT' THEN 489
-                    WHEN 'TAF LEMON & LIME  /3,7LT' THEN 490
+                    WHEN 'TAF FRESH BLUE /3,7LT' THEN 489
+                    WHEN 'TAF LEMON & LIME /3,7LT' THEN 490
                     WHEN 'TAF /20L' THEN 491
                     WHEN 'TAF LEMON & LIME 2S 500ML FLIPTOP' THEN 492
                     WHEN 'TAF FRESH BLUE 2S 500ML FLIPTOP' THEN 493
                     WHEN 'TRIL FLORAL SPRAY /500ML' THEN 494
                     WHEN 'TRIL LAVENDER SPRAY /500ML' THEN 495
-                    WHEN 'TRIL ROMANTIC BLUE  /3,7LT' THEN 496
-                    WHEN 'TRIL FRESH GREEN  /3,7LT' THEN 497
+                    WHEN 'TRIL ROMANTIC BLUE /3,7LT' THEN 496
+                    WHEN 'TRIL FRESH GREEN /3,7LT' THEN 497
                     WHEN 'TRIL ROMANTIC BLUE /20L' THEN 498
                     WHEN 'TRIL ROSE PINK /20L' THEN 499
                     WHEN 'TRIL FRESH GREEN /20L' THEN 500
@@ -577,8 +579,8 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI DISINFECTANT SPRAY /500ML + YURI DISINFECTANT SPRAY 50ML' THEN 507
                     WHEN 'YURI DESINFECTANT SPRAY /3,7L' THEN 508
                     WHEN 'YURI DESINFECTANT SPRAY /410ML (IND)' THEN 509
-                    WHEN 'YURI FABRIC CARE   /375ML' THEN 510
-                    WHEN 'YURI FABRIC CARE   /1L' THEN 511
+                    WHEN 'YURI FABRIC CARE /375ML' THEN 510
+                    WHEN 'YURI FABRIC CARE /1L' THEN 511
                     WHEN 'YURI HAND GEL ANTIBACTERIAL GREEN TEA /30ML' THEN 512
                     WHEN 'YURI HAND GEL ANTIBACTERIAL STRAWBERRY /30ML' THEN 513
                     WHEN 'YURI HAND GEL ANTIBACTERIAL 30ML /TWINPACK' THEN 514
@@ -594,14 +596,14 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'YURI LAUNDRY DISINFECTANT /410ML' THEN 524
                     WHEN 'PAKET CLEANER 1' THEN 525
                     WHEN 'YURISOFT ROMANTIC BLUE /250ML' THEN 526
-                    WHEN 'YURISOFT LAVENDER  /250ML' THEN 527
-                    WHEN 'YURISOFT FLORAL  /250ML' THEN 528
+                    WHEN 'YURISOFT LAVENDER /250ML' THEN 527
+                    WHEN 'YURISOFT FLORAL /250ML' THEN 528
                     WHEN 'YURISOFT ROMANTIC BLUE /630ML' THEN 529
                     WHEN 'YURISOFT LAVENDER /630ML' THEN 530
                     WHEN 'YURISOFT FLORAL /630ML' THEN 531
                     WHEN 'YURISOFT ROMANTIC BLUE /1L' THEN 532
                     WHEN 'YURISOFT LAVENDER  /1L' THEN 533
-                    WHEN 'YURISOFT FLORAL  /1L' THEN 534
+                    WHEN 'YURISOFT FLORAL /1L' THEN 534
                     WHEN 'YURI ADULT''S TOOTH BRUSH' THEN 535
                     WHEN 'TEAK OIL /20L' THEN 536
                     WHEN 'TEAK OIL /200L' THEN 537
@@ -623,7 +625,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'AGANOL FLORAL /1L' THEN 9
                     WHEN 'AGANOL LEMON FRESH /1L' THEN 10
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /1L' THEN 11
-                    WHEN 'AGANOL APPLE FRESH  /2L' THEN 12
+                    WHEN 'AGANOL APPLE FRESH /2L' THEN 12
                     WHEN 'AGANOL FLORAL /2L' THEN 13
                     WHEN 'AGANOL LEMON FRESH /2L' THEN 14
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /2L' THEN 15
@@ -636,7 +638,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                     WHEN 'AGANOL /20L' THEN 22
                     WHEN 'AGANOL APPLE /20L' THEN 23
                     WHEN 'AGANOL FLORAL /20L' THEN 24
-                    WHEN 'AGANOL LEMON  /20L' THEN 25
+                    WHEN 'AGANOL LEMON /20L' THEN 25
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /20L' THEN 26
                     WHEN 'AGANOL /200L' THEN 27
                     WHEN 'AGANOL MORNING FRESH /200L' THEN 28
@@ -1171,7 +1173,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
             $totalOutsell3Month = AgentExportReport::query()
 
                 ->whereRaw("
-            REGEXP_REPLACE(TRIM(match_item), '\s+', ' ', 'g')
+            REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
             =
             REGEXP_REPLACE(TRIM(?), '\s+', ' ', 'g')
         ", [$normalizedItem])
@@ -1186,7 +1188,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
             $totalSalesQtyPcs = AgentExportReport::query()
 
                 ->whereRaw("
-        REGEXP_REPLACE(TRIM(match_item), '\s+', ' ', 'g')
+        REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
         =
         REGEXP_REPLACE(TRIM(?), '\s+', ' ', 'g')
     ", [$normalizedItem])
@@ -1198,8 +1200,13 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
 
                 ->sum('qty_terjual_pcs');
 
+            // dd($item->item_per_box);
+
+            // $totalSalesQtyOutsellKarton = $item->item_per_box > 0
+            //     ? floor(($totalSalesQtyPcs / $item->item_per_box) + 0.5)
+            //     : 0;
             $totalSalesQtyOutsellKarton = $item->item_per_box > 0
-                ? floor(($totalSalesQtyPcs / $item->item_per_box) + 0.5)
+                ? round($totalSalesQtyPcs / $item->item_per_box)
                 : 0;
 
             //LAMAMAMAM BENER
@@ -1253,7 +1260,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                 ->subMonth()
                 ->format('Y-m');
 
-            $totalStock = AgentExportStock::query()
+            $totalStockPcs = AgentExportStock::query()
                 ->whereRaw("
         REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
         =
@@ -1263,6 +1270,9 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                 ->where('periode', $previousPeriod)
 
                 ->sum('stock_karton');
+
+            // $totalStock = $totalStockPcs / $itemPerBox;
+            $totalStock = round($totalStockPcs / $itemPerBox);
 
             //         $totalStock = AgentExportStock::query()
             //             ->whereRaw("
@@ -1294,14 +1304,33 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
             //             ? round($totalStock3Month / 3, 2)
             //             : 0;
 
-            $totalCmo = max(
-                0,
-                ceil(
+            $minStock = DB::table('customer_item_min_stocks')
+                ->where('user_id', $this->report->user_id)
+                ->where('item_id', $item->id)
+                ->value('minimum_stock');
+
+            if ($minStock !== null) {
+
+                $totalCmo =
+                    $minStock
+                    + $totalSalesQtyOutsellKarton
+                    - $totalStock;
+            } else {
+
+                $totalCmo =
                     $totalSalesQtyOutsellKarton
-                        + (($buffer / 30) * $avgQtyOutsell)
-                        - $totalStock
-                )
-            );
+                    + (($buffer / 30) * $avgQtyOutsell)
+                    - $totalStock;
+            }
+
+            // $totalCmo = max(
+            //     0,
+            //     ceil(
+            //         $totalSalesQtyOutsellKarton
+            //             + (($buffer / 30) * $avgQtyOutsell)
+            //             - $totalStock
+            //     )
+            // );
 
             $volume = (
                 ($item->length_cm ?? 0)
@@ -1310,6 +1339,8 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                 *
                 ($item->height_cm ?? 0)
             ) / 1000000;
+
+
 
             // $totalStock = $totalStock3Month > 0
             //     ? round($totalStock3Month / 3, 2)
@@ -1398,26 +1429,43 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
                 'item_per_box' => $item->item_per_box,
 
                 'total_stock_karton' => number_format(
-                    $totalStock,
-                    2
+                    round($totalStock),
+                    0
                 ),
+
+                // 'total_stock_karton' => number_format(
+                //     $totalStock,
+                //     2
+                // ),
 
                 // 'total_stock_karton' => '-',
                 // 'buffer' => 45,
                 'buffer' => $buffer,
 
+                // 'avg_qty_outsell_karton' => (int) round($avgQtyOutsell ?: 0),
+
                 'avg_qty_outsell_karton' => number_format(
-                    $avgQtyOutsell,
-                    2
+                    round($avgQtyOutsell),
+                    0
                 ),
+
+                // 'avg_qty_outsell_karton' => number_format(
+                //     $avgQtyOutsell,
+                //     2
+                // ),
 
                 'total_sales_qty_insell_karton' => '0',
 
-                // 'total_sales_qty_outsell_karton' => '-',
                 'total_sales_qty_outsell_karton' => number_format(
-                    $totalSalesQtyOutsellKarton,
-                    2
+                    round($totalSalesQtyOutsellKarton),
+                    0
                 ),
+
+                // 'total_sales_qty_outsell_karton' => '-',
+                // 'total_sales_qty_outsell_karton' => number_format(
+                //     $totalSalesQtyOutsellKarton,
+                //     2
+                // ),
 
                 'nka1' => '-',
 
@@ -1425,24 +1473,42 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
 
                 'nka3' => '-',
 
-                'min_stock' => '-',
-
+                'min_stock' => number_format(
+                    $minStock ?? 0,
+                    0
+                ),
                 'min_stock_nka' => '-',
 
-                'selisih_karton_order_agen' => '-',
+                'selisih_karton_order_agen' => number_format(max($totalCmo, 0)),
 
                 // 'cmo' => '-',
-                'cmo' => number_format(
-                    $totalSalesQtyOutsellKarton
-                        + (($buffer / 30) * $avgQtyOutsell)
-                        - $totalStock,
-                    1
-                ),
+                // 'cmo' => number_format(
+                //     $totalSalesQtyOutsellKarton
+                //         + (($buffer / 30) * $avgQtyOutsell)
+                //         - $totalStock,
+                //     1
+                // ),
+                'cmo' => number_format($totalCmo, 1),
+                // 'cmo' =>
+
+                // $totalSalesQtyOutsellKarton
+                //     . ' + (('
+                //     . $buffer
+                //     . ' / 30) x '
+                //     . $avgQtyOutsell
+                //     . ') - '
+                //     . $totalStock
+                //     . ' = '
+                //     . number_format($totalCmo, 1),
 
                 'order_tambahan' => '-',
 
                 // 'total_cmo' => $totalCmo,
-                'total_cmo' => number_format($totalCmo, 0),
+                // 'total_cmo' => number_format($totalCmo, 0),
+                'total_cmo' => number_format(
+                    max(0, $totalCmo),
+                    0
+                ),
 
                 'total_berat' => number_format(
                     max(
@@ -2722,6 +2788,22 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize
             'TOTAL CMO',
             'TOTAL BERAT (kg)',
             'TOTAL VOLUME (m3)',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'A' => NumberFormat::FORMAT_NUMBER,
+            'B' => NumberFormat::FORMAT_NUMBER,
+            'C' => NumberFormat::FORMAT_NUMBER,
+            'D' => NumberFormat::FORMAT_NUMBER,
+            'E' => NumberFormat::FORMAT_NUMBER,
+            'F' => NumberFormat::FORMAT_NUMBER,
+            'G' => NumberFormat::FORMAT_NUMBER,
+            'H' => NumberFormat::FORMAT_NUMBER,
+            'I' => NumberFormat::FORMAT_NUMBER,
+            'J' => NumberFormat::FORMAT_NUMBER,
         ];
     }
 }
