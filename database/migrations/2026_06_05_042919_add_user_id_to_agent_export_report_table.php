@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('agent_item_mappings', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('agent_export_report', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id')->nullable()->after('id');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('agent_item_mappings');
+        Schema::table('agent_export_report', function (Blueprint $table) {
+            //
+        });
     }
 };

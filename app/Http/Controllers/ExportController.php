@@ -6,6 +6,7 @@ use App\Exports\CMOExport;
 use App\Models\AgentExportReport;
 use App\Models\AgentExportStock;
 use App\Models\AgentReport;
+use App\Models\MappingReport;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -165,7 +166,8 @@ class ExportController extends Controller
             DB::table('mappings')->insert([
                 'sheet' => $request->sheet,
                 'mapping_json' => $mappingJson,
-                'agent_report_id' => $request->agent_report_id,
+                'mapping_report_id' => $request->mapping_report_id,
+                // 'agent_report_id' => $request->agent_report_id,
                 'agent_id' => $request->agent_id,
                 'nama_agent' => $user->name ?? null,
                 // 'nama_agent' => $request->nama_agent,
@@ -193,6 +195,11 @@ class ExportController extends Controller
             $mapping = DB::table('mappings')
                 ->where('agent_id', $request->agent_id)
                 ->first();
+
+            // return response()->json([
+            //     'mapping' => $mapping
+            // ]);
+
 
             $aliases = DB::table('item_aliases')
                 ->select('agent_name', 'clean_name', 'master_name')
@@ -790,7 +797,8 @@ class ExportController extends Controller
 
             Log::info('START EXPORT CMO');
 
-            $report = AgentReport::find($request->report_id);
+            // $report = AgentReport::find($request->report_id);
+            $report = MappingReport::find($request->report_id);
 
             return Excel::download(
                 new CMOExport($report->id),
@@ -805,4 +813,150 @@ class ExportController extends Controller
             ], 500);
         }
     }
+
+    public function normalize(Request $request)
+    {
+        // Pastikan request membawa tipe report (contoh: 'LK-000019' atau '000019')
+        $reportType = $request->input('report_type', 'UNKNOWN');
+
+        $fullInputPath = storage_path(
+            'app/public/' . $request->file_path
+        );
+
+        // $outputFileName = 'normalized_' . time() . '.xlsx';
+        $originalName = pathinfo(
+            $request->input('report_type'),
+            PATHINFO_FILENAME
+        );
+
+        $outputFileName = 'normalized_' . $originalName . '.xlsx';
+
+        // Pastikan folder 'app/temp' sudah ada atau gunakan storage_path('app/public/temp/...')
+        $fullOutputPath = storage_path(
+            'app/temp/' . $outputFileName
+        );
+
+        $pythonScript = base_path(
+            'scripts/normalize.py'
+        );
+
+        // Tambahkan $reportType sebagai argumen ke-3, bungkus dengan escapeshellarg demi keamanan CLI
+        $process = Process::fromShellCommandline(
+            "python3 " . escapeshellarg($pythonScript) . " " . escapeshellarg($fullInputPath) . " " . escapeshellarg($fullOutputPath) . " " . escapeshellarg($reportType)
+        );
+
+        $process->setTimeout(300);
+        // $process->run(function ($type, $buffer) {
+        //     echo $buffer;
+        // });
+        // $process->run();
+
+        $process->run();
+
+        // $debugOutput = $process->getOutput();
+        // $debugError = $process->getErrorOutput();
+
+        // if (!$process->isSuccessful()) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'stdout' => $debugOutput,
+        //         'stderr' => $debugError,
+        //     ], 500);
+        // }
+
+        // return response()->json([
+        //     'success' => true,
+        //     'stdout' => $debugOutput,
+        //     'stderr' => $debugError,
+        //     'download' => asset('storage/temp/' . $outputFileName)
+        // ]);
+
+        if (!$process->isSuccessful()) {
+            return response()->json([
+                'success' => false,
+                'error' => $process->getErrorOutput(),
+                'output' => $process->getOutput(),
+            ], 500);
+        }
+
+        return response()->download(
+            $fullOutputPath,
+            $outputFileName
+        );
+    }
+
+    // public function normalize(Request $request)
+    // {
+    //     $request->validate([
+    //         'file_path' => 'required'
+    //     ]);
+
+    //     // ==========================================
+    //     // FILE ASLI
+    //     // ==========================================
+    //     $fullInputPath = storage_path(
+    //         'app/private/' . $request->file_path
+    //     );
+
+    //     // ==========================================
+    //     // OUTPUT
+    //     // ==========================================
+    //     $outputFileName =
+    //         'normalized_' . time() . '.xlsx';
+
+    //     $fullOutputPath = storage_path(
+    //         'app/temp/' . $outputFileName
+    //     );
+
+    //     // ==========================================
+    //     // PYTHON SCRIPT
+    //     // ==========================================
+    //     $pythonScript = storage_path(
+    //         'app/python/normalize.py'
+    //     );
+
+    //     // ==========================================
+    //     // RUN PYTHON
+    //     // ==========================================
+    //     // $process = new Process([
+    //     //     'python',
+    //     //     $pythonScript,
+    //     //     $fullInputPath,
+    //     //     $fullOutputPath
+    //     // ]);
+
+    //     $process = Process::fromShellCommandline(
+    //         "python \"$pythonScript\" \"$fullInputPath\" \"$fullOutputPath\""
+    //     );
+
+    //     $process->setTimeout(300);
+
+    //     $process->run();
+
+    //     dd([
+    //         'success' => $process->isSuccessful(),
+    //         'output' => $process->getOutput(),
+    //         'error' => $process->getErrorOutput(),
+    //         'command' => $process->getCommandLine(),
+    //     ]);
+
+    //     // ==========================================
+    //     // ERROR
+    //     // ==========================================
+    //     if (!$process->isSuccessful()) {
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $process->getErrorOutput()
+    //         ], 500);
+    //     }
+
+    //     // ==========================================
+    //     // DOWNLOAD
+    //     // ==========================================
+    //     return response()->download(
+    //         $fullOutputPath,
+    //         $outputFileName
+    //     );
+    // }
 }

@@ -58,7 +58,7 @@ const canSeeAgentColumn = computed(() => {
 
 const props = defineProps({
     reports: Array,
-    // agents: Array,
+    agents: Array,
 });
 
 const showModal = ref(false);
@@ -83,7 +83,7 @@ const openEditModal = (report) => {
     editingId.value = report.id;
 
     // Isi form dengan data yang akan diedit
-    // form.agent_id = report.agent_id;
+    form.user_id = report.user_id;
     form.month = report.month;
     form.year = report.year;
     form.file = null; // File dikosongkan kecuali user ingin ganti
@@ -95,10 +95,10 @@ const submit = () => {
     if (isEditing.value) {
         // Mode Update Menggunakan router.post manual
         router.post(
-            route("reports.update", editingId.value),
+            route("mappingagentreports.update", editingId.value),
             {
                 _method: "put", // Masukkan method spoofing di sini
-                agent_id: form.agent_id,
+                user_id: form.user_id,
                 month: form.month,
                 year: form.year,
                 file: form.file, // File input
@@ -113,7 +113,7 @@ const submit = () => {
         );
     } else {
         // Mode Create tetap gunakan form.post
-        form.post(route("reports.store"), {
+        form.post(route("mappingagentreports.store"), {
             forceFormData: true,
             onSuccess: () => {
                 toast.success("Laporan berhasil diupload!");
@@ -124,7 +124,7 @@ const submit = () => {
 };
 
 const form = useForm({
-    // agent_id: "",
+    user_id: "",
     month: new Date().getMonth() + 1, // Default bulan sekarang
     year: new Date().getFullYear(), // Default tahun sekarang
     file: null,
@@ -146,7 +146,7 @@ const months = [
 ];
 
 const downloadFile = (id) => {
-    window.location.href = route("reports.download", id);
+    window.location.href = route("mappingagentreports.download", id);
 };
 
 // ... import yang sudah ada ...
@@ -158,7 +158,7 @@ const confirmDelete = (report) => {
 };
 
 const executeDelete = () => {
-    router.delete(route("reports.destroy", reportToDelete.value.id), {
+    router.delete(route("mappingagentreports.destroy", reportToDelete.value.id), {
         preserveScroll: true,
         onSuccess: () => {
             toast.success("Laporan berhasil dihapus!");
@@ -618,7 +618,7 @@ const normalizeReport = async (report) => {
     <Head title="Laporan Agent" />
 
     <AuthenticatedLayout>
-        <template #header>Laporan Agent</template>
+        <template #header>Mapping Laporan Agent</template>
 
         <!-- <p>
             Role Anda saat ini:
@@ -941,33 +941,34 @@ const normalizeReport = async (report) => {
                 </h2>
 
                 <form @submit.prevent="submit" class="space-y-4">
-                    <!-- <div>
+                    <div>
                         <label
                             class="block text-xs font-bold text-gray-500 mb-1 uppercase"
                         >
                             Pilih Agent
                         </label>
                         <select
-                            v-model="form.agent_id"
+                            v-model="form.user_id"
                             class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
                             required
                         >
-                            <option value="" disabled>-- Pilih Agent --</option>
+                            <option value="" disabled>-- Pilih User --</option>
+
                             <option
-                                v-for="agent in agents"
-                                :key="agent.id"
-                                :value="agent.id"
+                                v-for="user in agents"
+                                :key="user.id"
+                                :value="user.id"
                             >
-                                {{ agent.code }} - {{ agent.name }}
+                                {{ user.name }}
                             </option>
                         </select>
                         <div
-                            v-if="form.errors.agent_id"
+                            v-if="form.errors.user_id"
                             class="text-red-500 text-[10px] mt-1 font-bold italic"
                         >
-                            {{ form.errors.agent_id }}
+                            {{ form.errors.user_id }}
                         </div>
-                    </div> -->
+                    </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>

@@ -185,4 +185,6 @@ class AgentReportController extends Controller
 
         return redirect()->back()->with('message', 'Laporan berhasil dihapus');
     }
+
+    
 }

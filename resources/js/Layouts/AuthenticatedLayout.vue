@@ -5,6 +5,7 @@ import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import Dropdown from "@/Components/Dropdown.vue";
 import DropdownLink from "@/Components/DropdownLink.vue";
 import { onMounted } from "vue";
+import { TableCellsIcon } from "@heroicons/vue/24/outline";
 import {
     HomeIcon,
     UsersIcon,
@@ -185,6 +186,36 @@ const toggleSettings = () => {
                         >Upload Laporan Excel</span
                     >
                 </Link>
+
+                <Link
+                    :href="route('mappingagentreports.index')"
+                    :class="
+                        $page.component === 'ReportsMapping/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <TableCellsIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium">
+                        Mapping Laporan Excel
+                    </span>
+                </Link>
+
+                <!-- <Link
+                    :href="route('mappingagentreports.index')"
+                    :class="
+                        $page.component === 'ReportsMapping/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <ArrowUpTrayIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium"
+                        >Mapping Laporan Excel</span
+                    >
+                </Link> -->
 
                 <!-- <Link
                     :href="route('import.mapping')"

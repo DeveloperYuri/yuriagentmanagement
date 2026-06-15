@@ -150,7 +150,8 @@ const saveMapping = async () => {
         const payload = {
             sheet: selectedSheet.value,
 
-            agent_report_id: reportId,
+            // agent_report_id: reportId,
+            mapping_report_id: reportId,
             agent_id: agentId,
             //nama_agent: null,
 
@@ -159,6 +160,8 @@ const saveMapping = async () => {
                 invoice: mappingInv.value,
             },
         };
+
+        console.log(payload);
 
         const res = await axios.post("/mapping/save", payload);
 

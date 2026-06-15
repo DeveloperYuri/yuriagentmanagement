@@ -10,6 +10,7 @@ use App\Http\Controllers\InventoryImportController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ItemGroupController;
 use App\Http\Controllers\MappingProdukController;
+use App\Http\Controllers\MappingreportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
@@ -57,6 +58,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reports/{report}/download', [AgentReportController::class, 'download'])->name('reports.download');
     Route::put('/reports/{report}', [AgentReportController::class, 'update'])->name('reports.update');
     Route::delete('/reports/{report}', [AgentReportController::class, 'destroy'])->name('reports.destroy');
+
+    // Route Mapping Upload Laporan Agent
+    Route::get('/mappingagentreports', [MappingreportController::class, 'index'])->name('mappingagentreports.index');
+    Route::post('/mappingagentreports/store', [MappingreportController::class, 'store'])->name('mappingagentreports.store');
+    Route::get('/mappingagentreports/{report}/download', [MappingreportController::class, 'download'])->name('mappingagentreports.download');
+    Route::put('/mappingagentreports/{report}', [MappingreportController::class, 'update'])->name('mappingagentreports.update');
+    Route::delete('/mappingagentreports/{report}', [MappingreportController::class, 'destroy'])->name('mappingagentreports.destroy');
 
     // Route Management Role
     Route::resource('roles', RoleController::class);
@@ -143,6 +151,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/agent-item-mappings/import',
         [AgentItemMappingController::class, 'import']
     )->name('agent-item-mappings.import');
+
+    Route::post('/normalize', [
+        ExportController::class,
+        'normalize'
+    ])->name('normalize.export');
 });
 
 // Route::post('/python/scan-file', function () {

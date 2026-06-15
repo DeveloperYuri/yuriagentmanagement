@@ -16,7 +16,8 @@ class Mapping extends Model
         'nama_agent',
         'sheet',
         'mapping_json',
-        'agent_report_id'
+        'agent_report_id',
+        'mapping_report_id',
     ];
 
     protected $casts = [

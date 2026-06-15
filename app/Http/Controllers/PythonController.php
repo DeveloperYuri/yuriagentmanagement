@@ -261,7 +261,8 @@ class PythonController extends Controller
     public function destroy($id)
     {
         $deleted = DB::table('mappings')
-            ->where('agent_report_id', $id)
+            // ->where('agent_report_id', $id)
+            ->where('mapping_report_id', $id)
             ->delete();
 
         return response()->json([

@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use App\Models\AgentReport;
+use App\Models\MappingReport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
@@ -21,7 +22,8 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
 
     public function __construct($reportId)
     {
-        $this->report = AgentReport::find($reportId);
+        // $this->report = AgentReport::find($reportId);
+        $this->report = MappingReport::find($reportId);
     }
 
     // public function __construct($agentId)
@@ -34,6 +36,9 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
         $month = $this->report->month;
         $year = $this->report->year;
         $buffer = 45;
+
+        $agentName = AgentExportReport::where('user_id', $this->report->user_id)
+            ->value('nama_agen') ?? '-';
 
         $periods = [
             Carbon::create($year, $month, 1)->subMonths(3)->format('Y-m'),
@@ -75,7 +80,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'AGANOL LAVENDER /2L' THEN 3
                     WHEN 'AGANOL LAVENDER /3,7LT' THEN 4
                     WHEN 'AGANOL LAVENDER /20L' THEN 5
-                    WHEN 'AGANOL LAVENDER /600ML + BUY 1 GET 1' THEN 6
+                    WHEN 'AGANOL LAVENDER /600ML' THEN 6
                     WHEN 'AGANOL LAVENDER /600ML' THEN 7
                     WHEN 'AGANOL FLORAL /80ML' THEN 8
                     WHEN 'AGANOL FLORAL /1L' THEN 9
@@ -110,7 +115,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /600ML' THEN 38
                     WHEN 'AGANOL MORNING FRESH /600ML' THEN 39
                     WHEN 'AGANOL PINE FRESH 2L +1L' THEN 40
-                    WHEN 'AGANOL PINE FRESH  /2L' THEN 41
+                    WHEN 'AGANOL PINE FRESH /2L' THEN 41
                     WHEN 'BABY SOFT /1L' THEN 42
                     WHEN 'BABY SOFT /3,7LT' THEN 43
                     WHEN 'BABY SOFT /5L' THEN 44
@@ -121,7 +126,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'BIOSOFT /250ML' THEN 49
                     WHEN 'BIOSOFT /375ML' THEN 50
                     WHEN 'BIOSOFT /3,7LT' THEN 51
-                    WHEN 'BIOSOFT HIJAB DETERGENT + SOFTENER OCEAN FRESH / 40ML' THEN 52
+                    WHEN 'BIOSOFT HIJAB DETERGENT + SOFTENER OCEAN FRESH /40ML' THEN 52
                     WHEN 'BIOSOFT HIJAB DETERGENT+SOFTENER OCEAN FRESH /900ML' THEN 53
                     WHEN 'BIOSOFT HIJAB DETERGENT+SOFTENER OCEAN FRESH /630ML' THEN 54
                     WHEN 'BIOSOFT HIJAB PEWANGI+SOFTENER HGR 24x10ML OCEAN FRESH' THEN 55
@@ -139,7 +144,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI BLEACH MORNING FRESH /1750ML' THEN 67
                     WHEN 'YURI BLEACH LEMON FRESH /1750ML' THEN 68
                     WHEN 'YURI BLEACH MORNING FRESH /3,7LT' THEN 69
-                    WHEN 'YURI BLEACH LEMON  /3,7LT' THEN 70
+                    WHEN 'YURI BLEACH LEMON /3,7LT' THEN 70
                     WHEN 'YURI BLEACH MORNING FRESH /5L' THEN 71
                     WHEN 'YURI BLEACH LEMON /5L' THEN 72
                     WHEN 'CAP POHON TEAK OIL /1L' THEN 73
@@ -208,8 +213,8 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE SHAMPOO APPLE 250ML PUMP +45ML' THEN 136
                     WHEN 'DEEDEE SHAMPOO ORANGE 250ML PUMP +45ML' THEN 137
                     WHEN 'DEEDEE SHAMPOO STRAW. 250ML PUMP +45ML' THEN 138
-                    WHEN 'DEEDEE SHAMPOO APPLE PUMP/250ML' THEN 139
-                    WHEN 'DEEDEE SHAMPOO APPLE PUMP/250ML FREE GIFT' THEN 140
+                    WHEN 'DEEDEE SHAMPOO APPLE PUMP /250ML' THEN 139
+                    WHEN 'DEEDEE SHAMPOO APPLE PUMP /250ML FREE GIFT' THEN 140
                     WHEN 'DEEDEE SHAMPOO GRAPE PUMP/250ML' THEN 141
                     WHEN 'DEEDEE SHAMPOO GRAPE PUMP/250ML FREE GIFT' THEN 142
                     WHEN 'DEEDEE SHAMPOO ORANGE PUMP/250ML' THEN 143
@@ -284,7 +289,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE TOOTH BRUSH MERAH /TRAY' THEN 212
                     WHEN 'DEEDEE TOOTH BRUSH UNGU /TRAY' THEN 213
                     WHEN 'DEE DEE TOOTH BRUSH PREMIUM BOX BESAR' THEN 214
-                    WHEN 'DEEDEE TOOTH BRUSH  BOX PREMIUM' THEN 215
+                    WHEN 'DEEDEE TOOTH BRUSH BOX PREMIUM' THEN 215
                     WHEN 'DEEDEE TALCUM POWDER APPLE /45GR' THEN 216
                     WHEN 'DEEDEE TALCUM POWDER APPLE /45GR-FREE FOAM STIKER CAR' THEN 217
                     WHEN 'DEEDEE TALCUM POWDER ORANGE /45GR' THEN 218
@@ -318,21 +323,21 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH LILAC /3,7LT' THEN 246
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /3,7LT' THEN 247
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /3,7LT' THEN 248
-                    WHEN 'YURI GLASS CLEANER FOAMING  /5L' THEN 249
+                    WHEN 'YURI GLASS CLEANER FOAMING /5L' THEN 249
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /20L' THEN 250
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /20L' THEN 251
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH LILAC /20L' THEN 252
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /410ML' THEN 253
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /410ML' THEN 254
                     WHEN 'YURI GLASS CLEANER FOAMING LILAC /410ML' THEN 255
-                    WHEN 'YURI HAND SOAP  GREEN TEA /410ML' THEN 256
+                    WHEN 'YURI HAND SOAP GREEN TEA /410ML' THEN 256
                     WHEN 'YURI HAND SOAP FOAMING GREEN TEA /410ML' THEN 257
                     WHEN 'YURI HAND SOAP ROSE /410ML' THEN 258
                     WHEN 'YURI HAND SOAP FOAMING ROSE /410ML' THEN 259
                     WHEN 'YURI HAND SOAP FOAMING ROSE /410ML FREE HAND GEL 50ML' THEN 260
-                    WHEN 'YURI HANDSOAP FOAMING  GREEN TEA 410ML +HS 375ML' THEN 261
-                    WHEN 'YURI HANDSOAP FOAMING  ROSE 410ML +HS 375ML' THEN 262
-                    WHEN 'YURI HANDSOAP FOAMING  LAVENDER 410ML +HS 375ML' THEN 263
+                    WHEN 'YURI HANDSOAP FOAMING GREEN TEA 410ML +HS 375ML' THEN 261
+                    WHEN 'YURI HANDSOAP FOAMING ROSE 410ML +HS 375ML' THEN 262
+                    WHEN 'YURI HANDSOAP FOAMING LAVENDER 410ML +HS 375ML' THEN 263
                     WHEN 'YURI HAND SOAP FOAMING GREEN TEA /375ML' THEN 264
                     WHEN 'YURI HAND SOAP ANTI BACTERIAL ROSE /375ML' THEN 265
                     WHEN 'YURI HAND SOAP FOAMING ROSE /375ML' THEN 266
@@ -353,35 +358,35 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI HAND SOAP LEMON 2S /375ML' THEN 281
                     WHEN 'YURI HAND SOAP ORANGE 2S /375ML' THEN 282
                     WHEN 'YURI HAND SOAP STRAWBERRY 2S /375ML' THEN 283
-                    WHEN 'YURI HAND SOAP LAVENDER  PUMP/410ML' THEN 284
+                    WHEN 'YURI HAND SOAP LAVENDER PUMP/410ML' THEN 284
                     WHEN 'YURI HAND SOAP FOAMING LAVENDER PUMP/410ML' THEN 285
                     WHEN 'YURI HAND SOAP LEMON PUMP/410ML' THEN 286
                     WHEN 'YURI HAND SOAP STRAWBERRY PUMP/410ML' THEN 287
                     WHEN 'YURI HAND SOAP PEACH PUMP/410ML' THEN 288
                     WHEN 'YURI HAND SOAP GUAVA PUMP/410ML' THEN 289
                     WHEN 'YURI HAND SOAP PEACH /3,7LT' THEN 290
-                    WHEN 'YURI HAND SOAP APPLE  REFILL/410ML' THEN 291
-                    WHEN 'YURI HAND SOAP GRAPES  REFILL/410ML' THEN 292
-                    WHEN 'YURI HAND SOAP LEMON  REFILL/410ML' THEN 293
-                    WHEN 'YURI HAND SOAP ORANGE  REFILL/410ML' THEN 294
-                    WHEN 'YURI HAND SOAP STRAWBERRY  REFILL/410ML' THEN 295
+                    WHEN 'YURI HAND SOAP APPLE REFILL/410ML' THEN 291
+                    WHEN 'YURI HAND SOAP GRAPES REFILL/410ML' THEN 292
+                    WHEN 'YURI HAND SOAP LEMON REFILL/410ML' THEN 293
+                    WHEN 'YURI HAND SOAP ORANGE REFILL/410ML' THEN 294
+                    WHEN 'YURI HAND SOAP STRAWBERRY REFILL/410ML' THEN 295
                     WHEN 'YURI HAND SOAP APPLE /3,7LT' THEN 296
                     WHEN 'YURI HAND SOAP GRAPE /3,7LT' THEN 297
                     WHEN 'YURI HAND SOAP LEMON /3,7LT' THEN 298
                     WHEN 'YURI HAND SOAP ORANGE /3,7LT' THEN 299
-                    WHEN 'YURI HAND SOAP STRAWBERRY  /3,7LT' THEN 300
+                    WHEN 'YURI HAND SOAP STRAWBERRY /3,7LT' THEN 300
                     WHEN 'YURI HAND SOAP PARFUME /200L' THEN 301
                     WHEN 'YURI HAND SOAP STRAWBERRY /200L' THEN 302
-                    WHEN 'YURI HAND SOAP APPLE  /375ML' THEN 303
+                    WHEN 'YURI HAND SOAP APPLE /375ML' THEN 303
                     WHEN 'YURI HAND SOAP APPLE 375ML + BUY 1 GET 1' THEN 304
-                    WHEN 'YURI HAND SOAP GRAPE  /375ML' THEN 305
-                    WHEN 'YURI HAND SOAP GRAPE  375ML + BUY1GET1' THEN 306
-                    WHEN 'YURI HAND SOAP LEMON  /375ML' THEN 307
-                    WHEN 'YURI HAND SOAP LEMON  375ML +  BUY 1 GET 1' THEN 308
-                    WHEN 'YURI HAND SOAP ORANGE  /375ML' THEN 309
-                    WHEN 'YURI HAND SOAP ORANGE  375ML +  BUY 1 GET 1' THEN 310
-                    WHEN 'YURI HAND SOAP STRAW  /375ML' THEN 311
-                    WHEN 'YURI HAND SOAP STRAWBERRY  375ML +  BUY 1 GET 1' THEN 312
+                    WHEN 'YURI HAND SOAP GRAPE /375ML' THEN 305
+                    WHEN 'YURI HAND SOAP GRAPE 375ML + BUY1GET1' THEN 306
+                    WHEN 'YURI HAND SOAP LEMON /375ML' THEN 307
+                    WHEN 'YURI HAND SOAP LEMON 375ML + BUY 1 GET 1' THEN 308
+                    WHEN 'YURI HAND SOAP ORANGE /375ML' THEN 309
+                    WHEN 'YURI HAND SOAP ORANGE 375ML + BUY 1 GET 1' THEN 310
+                    WHEN 'YURI HAND SOAP STRAW /375ML' THEN 311
+                    WHEN 'YURI HAND SOAP STRAWBERRY 375ML + BUY 1 GET 1' THEN 312
                     WHEN 'YURI HAND SOAP LEMON 375ML +HANDGEL' THEN 313
                     WHEN 'YURI HANDSOAP STRAWBERRY 375ML +HANDGEL' THEN 314
                     WHEN 'YURI HAND SOAP APPLE 2S 375ML' THEN 315
@@ -392,19 +397,19 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'LIGENT BABY PUMP /450ML FREE GIFT' THEN 320
                     WHEN 'LIGENT BABY POUCH /410ML' THEN 321
                     WHEN 'LIGENT LIME /80ML' THEN 322
-                    WHEN 'LIGENT BIOLIME & BERGAMOT /80ML' THEN 323
+                    WHEN 'LIGENT BIO LIME & BERGAMOT /80ML' THEN 323
                     WHEN 'LIGENT LEMON /80ML' THEN 324
                     WHEN 'LIGENT GRAPEFRUIT /80ML' THEN 325
-                    WHEN 'LIGENT BIO LIME & BERGAMOT FLIPTOP/  1 L' THEN 326
-                    WHEN 'LIGENT BIO LEMON & BERGAMOT FLIPTOP/  1 L' THEN 327
-                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT  FLIPTOP/  1 L' THEN 328
+                    WHEN 'LIGENT BIO LIME & BERGAMOT FLIPTOP /1L' THEN 326
+                    WHEN 'LIGENT BIO LEMON & BERGAMOT FLIPTOP /1L' THEN 327
+                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT FLIPTOP /1L' THEN 328
                     WHEN 'LIGENT BIO LIME & BERGAMOT /600ML' THEN 329
                     WHEN 'LIGENT BIO LEMON & BERGAMOT BOTTLE /600ML' THEN 330
                     WHEN 'LIGENT LIME 4S 630ML' THEN 331
                     WHEN 'LIGENT LEMON 4S 630ML' THEN 332
                     WHEN 'LIGENT GRAPEFRUIT 4S 630ML' THEN 333
                     WHEN 'LIGENT LIME PUMP 1L + GLASS CLEANER 500ML' THEN 334
-                    WHEN 'LIGENT LIME PUMP 1000ML + GLASS CLEANER  500ML SPRAY' THEN 335
+                    WHEN 'LIGENT LIME PUMP 1000ML + GLASS CLEANER 500ML SPRAY' THEN 335
                     WHEN 'LIGENT LEMON PUMP 1L' THEN 336
                     WHEN 'LIGENT LEMON PUMP 1000ML + GLASS CLEANER 500ML SPRAY LEMON FRESH' THEN 337
                     WHEN 'LIGENT GRAPEFRUIT PUMP 1L +AIRT.CONT' THEN 338
@@ -415,7 +420,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'LIGENT LIME PUMP /1L' THEN 343
                     WHEN 'LIGENT (P)-LIME /1000ML' THEN 344
                     WHEN 'LIGENT PUMP LIME 1L + FREE GIFT' THEN 345
-                    WHEN 'LIGENT BIO (P)-LIME & BERGAMOT  / 1000ML' THEN 346
+                    WHEN 'LIGENT BIO (P)-LIME & BERGAMOT /1000ML' THEN 346
                     WHEN 'LIGENT PUMP LIME 1L + CUP COVER' THEN 347
                     WHEN 'LIGENT LEMON PUMP /1L' THEN 348
                     WHEN 'LIGENT (P)-LEMON /1000ML' THEN 349
@@ -423,32 +428,32 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'LIGENT BIO (P)- LEMON & BERGAMOT /1000ML' THEN 351
                     WHEN 'LIGENT PANDAN /1L' THEN 352
                     WHEN 'LIGENT LEMON /1L' THEN 353
-                    WHEN 'LIGENT GRAPEFRUIT  /1L' THEN 354
+                    WHEN 'LIGENT GRAPEFRUIT /1L' THEN 354
                     WHEN 'LIGENT (P)-GRAPEFRUIT /1000ML' THEN 355
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + FREE GIFT' THEN 356
                     WHEN 'LIGENT BIO (P)-GRAPEFRUIT & BERGAMOT /1000ML' THEN 357
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + CUP COVER' THEN 358
                     WHEN 'LIGENT LIME /3,7LT' THEN 359
                     WHEN 'LIGENT BIO LIME & BERGAMOT / 3.7L' THEN 360
-                    WHEN 'LIGENT LEMON  /3,7LT' THEN 361
+                    WHEN 'LIGENT LEMON /3,7LT' THEN 361
                     WHEN 'LIGENTBIO - LEMON & BERGAMOT/ 3,7LT' THEN 362
-                    WHEN 'LIGENT GRAPEFRUIT  /3,7LT' THEN 363
+                    WHEN 'LIGENT GRAPEFRUIT /3,7LT' THEN 363
                     WHEN 'LIGENT BIO - GRAPE FRUIT & BERGAMOT /3,7LT' THEN 364
                     WHEN 'LIGENT LIME 2S 1L REFILL' THEN 365
                     WHEN 'LIGENT LEMON 2S 1L REFILL' THEN 366
                     WHEN 'LIGENT ORANGE 2S 1L REFILL' THEN 367
                     WHEN 'LIGENT GRAPE FRUIT BUNDLE /600ML FREE GIFT' THEN 368
                     WHEN 'LIGENT LIME/600ML FREE GIFT (SCAN 2X)' THEN 369
-                    WHEN 'LIGENT LEMON /600ML FREE GIFT  (SCAN 2X)' THEN 370
+                    WHEN 'LIGENT LEMON /600ML FREE GIFT (SCAN 2X)' THEN 370
                     WHEN 'LIGENT GRAPE FRUIT /600ML FREE GIFT (SCAN 2X)' THEN 371
                     WHEN 'LIGENT LIME 1L PUMP +REFILL' THEN 372
                     WHEN 'LIGENT LEMON 1L PUMP +REFILL' THEN 373
-                    WHEN 'LIGENT GRAPEFRUIT  1L PUMP +REFILL' THEN 374
+                    WHEN 'LIGENT GRAPEFRUIT 1L PUMP + REFILL' THEN 374
                     WHEN 'LIGENT LIME /20L' THEN 375
                     WHEN 'LIGENT BIO- LIME & BERGAMOT JRG/ 20LT' THEN 376
                     WHEN 'LIGENT LEMON /20L' THEN 377
                     WHEN 'LIGENT BIO - LEMON & BERGAMOT JRG/ 20LT' THEN 378
-                    WHEN 'LIGENT GRAPEFRUIT  /20L' THEN 379
+                    WHEN 'LIGENT GRAPEFRUIT /20L' THEN 379
                     WHEN 'LIGENT BIO - GRAPE FRUIT & BERGAMOT JRG/20LT' THEN 380
                     WHEN 'LIGENT LIME /20L' THEN 381
                     WHEN 'LIGENT LEMON /200L' THEN 382
@@ -614,12 +619,12 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
             ->orderByRaw("
             CASE REGEXP_REPLACE(TRIM(item_name), '\s+', ' ', 'g')
 
-                WHEN 'AGANOL LAVENDER /1L' THEN 1
+                    WHEN 'AGANOL LAVENDER /1L' THEN 1
                     WHEN 'AGANOL LAVENDER 2L +1L' THEN 2
                     WHEN 'AGANOL LAVENDER /2L' THEN 3
                     WHEN 'AGANOL LAVENDER /3,7LT' THEN 4
                     WHEN 'AGANOL LAVENDER /20L' THEN 5
-                    WHEN 'AGANOL LAVENDER /600ML + BUY 1 GET 1' THEN 6
+                    WHEN 'AGANOL LAVENDER /600ML' THEN 6
                     WHEN 'AGANOL LAVENDER  /600ML' THEN 7
                     WHEN 'AGANOL FLORAL /80ML' THEN 8
                     WHEN 'AGANOL FLORAL /1L' THEN 9
@@ -646,18 +651,18 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'AGANOL LEMON FRESH 3S /600ML' THEN 30
                     WHEN 'AGANOL MORNING FRESH 3S /600ML' THEN 31
                     WHEN 'AGANOL LAVENDER 3S /600ML' THEN 32
-                    WHEN 'AGANOL FLORAL  /3LT' THEN 33
-                    WHEN 'AGANOL FLORAL  /600ML (24 PCS)' THEN 34
+                    WHEN 'AGANOL FLORAL /3LT' THEN 33
+                    WHEN 'AGANOL FLORAL /600ML (24 PCS)' THEN 34
                     WHEN 'AGANOL FLORAL /600ML' THEN 35
                     WHEN 'AGANOL LEMON FRESH /600ML' THEN 36
-                    WHEN 'AGANOL LEMON FRESH  /600ML' THEN 37
+                    WHEN 'AGANOL LEMON FRESH /600ML' THEN 37
                     WHEN 'AGANOL MORNING FRESH W/ LEMONGRASS /600ML' THEN 38
-                    WHEN 'AGANOL MORNING FRESH  /600ML' THEN 39
+                    WHEN 'AGANOL MORNING FRESH /600ML' THEN 39
                     WHEN 'AGANOL PINE FRESH 2L +1L' THEN 40
-                    WHEN 'AGANOL PINE FRESH  /2L' THEN 41
+                    WHEN 'AGANOL PINE FRESH /2L' THEN 41
                     WHEN 'BABY SOFT /1L' THEN 42
                     WHEN 'BABY SOFT /3,7LT' THEN 43
-                    WHEN 'BABY SOFT   /5L' THEN 44
+                    WHEN 'BABY SOFT /5L' THEN 44
                     WHEN 'BABY SOFT EXTRA JRG/20L' THEN 45
                     WHEN 'BABY SOFT /410ML' THEN 46
                     WHEN 'YURI BATHROOM CLEANER /500ML' THEN 47
@@ -665,7 +670,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'BIOSOFT /250ML' THEN 49
                     WHEN 'BIOSOFT /375ML' THEN 50
                     WHEN 'BIOSOFT /3,7LT' THEN 51
-                    WHEN 'BIOSOFT HIJAB DETERGENT + SOFTENER OCEAN FRESH / 40ML' THEN 52
+                    WHEN 'BIOSOFT HIJAB DETERGENT + SOFTENER OCEAN FRESH /40ML' THEN 52
                     WHEN 'BIOSOFT HIJAB DETERGENT+SOFTENER OCEAN FRESH /900ML' THEN 53
                     WHEN 'BIOSOFT HIJAB DETERGENT+SOFTENER OCEAN FRESH /630ML' THEN 54
                     WHEN 'BIOSOFT HIJAB PEWANGI+SOFTENER HGR 24x10ML OCEAN FRESH' THEN 55
@@ -683,12 +688,12 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI BLEACH MORNING FRESH /1750ML' THEN 67
                     WHEN 'YURI BLEACH LEMON FRESH /1750ML' THEN 68
                     WHEN 'YURI BLEACH MORNING FRESH /3,7LT' THEN 69
-                    WHEN 'YURI BLEACH LEMON  /3,7LT' THEN 70
+                    WHEN 'YURI BLEACH LEMON /3,7LT' THEN 70
                     WHEN 'YURI BLEACH MORNING FRESH /5L' THEN 71
                     WHEN 'YURI BLEACH LEMON /5L' THEN 72
-                    WHEN 'CAP POHON TEAK OIL  /1L' THEN 73
-                    WHEN 'CAP POHON TEAK OIL  /3,7LT' THEN 74
-                    WHEN 'CAP POHON TEAK OIL  /20L' THEN 75
+                    WHEN 'CAP POHON TEAK OIL /1L' THEN 73
+                    WHEN 'CAP POHON TEAK OIL /3,7LT' THEN 74
+                    WHEN 'CAP POHON TEAK OIL /20L' THEN 75
                     WHEN 'BABYDEE BODYWASH & SHAMPOO MILK /50ML' THEN 76
                     WHEN 'BABYDEE BODYWASH & SHAMPOO HONEY /50ML' THEN 77
                     WHEN 'BABYDEE BODYWASH & SHAMPOO MILK /100ML' THEN 78
@@ -752,8 +757,8 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE SHAMPOO APPLE 250ML PUMP +45ML' THEN 136
                     WHEN 'DEEDEE SHAMPOO ORANGE 250ML PUMP +45ML' THEN 137
                     WHEN 'DEEDEE SHAMPOO STRAW. 250ML PUMP +45ML' THEN 138
-                    WHEN 'DEEDEE SHAMPOO APPLE PUMP/250ML' THEN 139
-                    WHEN 'DEEDEE SHAMPOO APPLE PUMP/250ML FREE GIFT' THEN 140
+                    WHEN 'DEEDEE SHAMPOO APPLE PUMP /250ML' THEN 139
+                    WHEN 'DEEDEE SHAMPOO APPLE PUMP /250ML FREE GIFT' THEN 140
                     WHEN 'DEEDEE SHAMPOO GRAPE PUMP/250ML' THEN 141
                     WHEN 'DEEDEE SHAMPOO GRAPE PUMP/250ML FREE GIFT' THEN 142
                     WHEN 'DEEDEE SHAMPOO ORANGE PUMP/250ML' THEN 143
@@ -767,11 +772,11 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE SHAMPOO GRAPE /45ML' THEN 151
                     WHEN 'DEEDEE SHAMPOO ORANGE /45ML' THEN 152
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY /45ML' THEN 153
-                    WHEN 'DEEDEE SHAMPOO APPLE REFILL/250ML' THEN 154
+                    WHEN 'DEEDEE SHAMPOO APPLE REFILL /250ML' THEN 154
                     WHEN 'DEEDEE SHAMPOO APPLE REFILL /250ML FREE GIFT' THEN 155
-                    WHEN 'DEEDEE SHAMPOO GRAPE REFILL/250ML' THEN 156
+                    WHEN 'DEEDEE SHAMPOO GRAPE REFILL /250ML' THEN 156
                     WHEN 'DEEDEE SHAMPOO GRAPE REFILL /250ML FREE GIFT' THEN 157
-                    WHEN 'DEEDEE SHAMPOO ORANGE REFILL/250ML' THEN 158
+                    WHEN 'DEEDEE SHAMPOO ORANGE REFILL /250ML' THEN 158
                     WHEN 'DEEDEE SHAMPOO ORANGE REFILL /250ML FREE GIFT' THEN 159
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY REFILL/250ML' THEN 160
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY REFILL /250ML FREE GIFT' THEN 161
@@ -783,10 +788,10 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE SHAMPOO GRAPE /200ML' THEN 167
                     WHEN 'DEEDEE SHAMPOO ORANGE /200ML' THEN 168
                     WHEN 'DEEDEE SHAMPOO STRAWBERRY /200ML' THEN 169
-                    WHEN 'DEEDEE SHAMPOO  APPLE /5ML' THEN 170
-                    WHEN 'DEEDEE SHAMPOO  GRAPE /5ML' THEN 171
-                    WHEN 'DEEDEE SHAMPOO  ORANGE /5ML' THEN 172
-                    WHEN 'DEEDEE SHAMPOO  STRAWBERRY /5ML' THEN 173
+                    WHEN 'DEEDEE SHAMPOO APPLE /5ML' THEN 170
+                    WHEN 'DEEDEE SHAMPOO GRAPE /5ML' THEN 171
+                    WHEN 'DEEDEE SHAMPOO ORANGE /5ML' THEN 172
+                    WHEN 'DEEDEE SHAMPOO STRAWBERRY /5ML' THEN 173
                     WHEN 'DEEDEE SHAMPOO GREEN TEA PUMP/200ML' THEN 174
                     WHEN 'DEEDEE SHAMPOO ROSE PUMP/200ML' THEN 175
                     WHEN 'DEEDEE FACIAL WASH GRAPE /100GR' THEN 176
@@ -828,7 +833,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'DEEDEE TOOTH BRUSH MERAH /TRAY' THEN 212
                     WHEN 'DEEDEE TOOTH BRUSH UNGU /TRAY' THEN 213
                     WHEN 'DEE DEE TOOTH BRUSH PREMIUM BOX BESAR' THEN 214
-                    WHEN 'DEEDEE TOOTH BRUSH  BOX PREMIUM' THEN 215
+                    WHEN 'DEEDEE TOOTH BRUSH BOX PREMIUM' THEN 215
                     WHEN 'DEEDEE TALCUM POWDER APPLE /45GR' THEN 216
                     WHEN 'DEEDEE TALCUM POWDER APPLE /45GR-FREE FOAM STIKER CAR' THEN 217
                     WHEN 'DEEDEE TALCUM POWDER ORANGE /45GR' THEN 218
@@ -862,21 +867,21 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH LILAC /3,7LT' THEN 246
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /3,7LT' THEN 247
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /3,7LT' THEN 248
-                    WHEN 'YURI GLASS CLEANER FOAMING  /5L' THEN 249
+                    WHEN 'YURI GLASS CLEANER FOAMING /5L' THEN 249
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /20L' THEN 250
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /20L' THEN 251
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH LILAC /20L' THEN 252
                     WHEN 'YURI GLASS CLEANER FOAMING FRESH BLUE /410ML' THEN 253
                     WHEN 'YURI GLASS CLEANER FOAMING LEMON FRESH /410ML' THEN 254
-                    WHEN 'YURI GLASS CLEANER FOAMING LILAC  /410ML' THEN 255
-                    WHEN 'YURI HAND SOAP  GREEN TEA /410ML' THEN 256
+                    WHEN 'YURI GLASS CLEANER FOAMING LILAC /410ML' THEN 255
+                    WHEN 'YURI HAND SOAP GREEN TEA /410ML' THEN 256
                     WHEN 'YURI HAND SOAP FOAMING GREEN TEA /410ML' THEN 257
                     WHEN 'YURI HAND SOAP ROSE /410ML' THEN 258
                     WHEN 'YURI HAND SOAP FOAMING ROSE /410ML' THEN 259
                     WHEN 'YURI HAND SOAP FOAMING ROSE /410ML FREE HAND GEL 50ML' THEN 260
-                    WHEN 'YURI HANDSOAP FOAMING  GREEN TEA 410ML +HS 375ML' THEN 261
-                    WHEN 'YURI HANDSOAP FOAMING  ROSE 410ML +HS 375ML' THEN 262
-                    WHEN 'YURI HANDSOAP FOAMING  LAVENDER 410ML +HS 375ML' THEN 263
+                    WHEN 'YURI HANDSOAP FOAMING GREEN TEA 410ML +HS 375ML' THEN 261
+                    WHEN 'YURI HANDSOAP FOAMING ROSE 410ML +HS 375ML' THEN 262
+                    WHEN 'YURI HANDSOAP FOAMING LAVENDER 410ML +HS 375ML' THEN 263
                     WHEN 'YURI HAND SOAP FOAMING GREEN TEA /375ML' THEN 264
                     WHEN 'YURI HAND SOAP ANTI BACTERIAL ROSE /375ML' THEN 265
                     WHEN 'YURI HAND SOAP FOAMING ROSE /375ML' THEN 266
@@ -897,35 +902,35 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI HAND SOAP LEMON 2S /375ML' THEN 281
                     WHEN 'YURI HAND SOAP ORANGE 2S /375ML' THEN 282
                     WHEN 'YURI HAND SOAP STRAWBERRY 2S /375ML' THEN 283
-                    WHEN 'YURI HAND SOAP LAVENDER  PUMP/410ML' THEN 284
+                    WHEN 'YURI HAND SOAP LAVENDER PUMP/410ML' THEN 284
                     WHEN 'YURI HAND SOAP FOAMING LAVENDER PUMP/410ML' THEN 285
-                    WHEN 'YURI HAND SOAP  LEMON PUMP/410ML' THEN 286
-                    WHEN 'YURI HAND SOAP  STRAWBERRY PUMP/410ML' THEN 287
-                    WHEN 'YURI HAND SOAP  PEACH PUMP/410ML' THEN 288
-                    WHEN 'YURI HAND SOAP  GUAVA PUMP/410ML' THEN 289
-                    WHEN 'YURI HAND SOAP  PEACH /3,7LT' THEN 290
-                    WHEN 'YURI HAND SOAP APPLE  REFILL/410ML' THEN 291
-                    WHEN 'YURI HAND SOAP GRAPES  REFILL/410ML' THEN 292
-                    WHEN 'YURI HAND SOAP LEMON  REFILL/410ML' THEN 293
-                    WHEN 'YURI HAND SOAP ORANGE  REFILL/410ML' THEN 294
-                    WHEN 'YURI HAND SOAP STRAWBERRY  REFILL/410ML' THEN 295
+                    WHEN 'YURI HAND SOAP LEMON PUMP/410ML' THEN 286
+                    WHEN 'YURI HAND SOAP STRAWBERRY PUMP/410ML' THEN 287
+                    WHEN 'YURI HAND SOAP PEACH PUMP/410ML' THEN 288
+                    WHEN 'YURI HAND SOAP GUAVA PUMP/410ML' THEN 289
+                    WHEN 'YURI HAND SOAP PEACH /3,7LT' THEN 290
+                    WHEN 'YURI HAND SOAP APPLE REFILL/410ML' THEN 291
+                    WHEN 'YURI HAND SOAP GRAPES REFILL/410ML' THEN 292
+                    WHEN 'YURI HAND SOAP LEMON REFILL/410ML' THEN 293
+                    WHEN 'YURI HAND SOAP ORANGE REFILL/410ML' THEN 294
+                    WHEN 'YURI HAND SOAP STRAWBERRY REFILL/410ML' THEN 295
                     WHEN 'YURI HAND SOAP APPLE /3,7LT' THEN 296
                     WHEN 'YURI HAND SOAP GRAPE /3,7LT' THEN 297
                     WHEN 'YURI HAND SOAP LEMON /3,7LT' THEN 298
                     WHEN 'YURI HAND SOAP ORANGE /3,7LT' THEN 299
-                    WHEN 'YURI HAND SOAP STRAWBERRY  /3,7LT' THEN 300
+                    WHEN 'YURI HAND SOAP STRAWBERRY /3,7LT' THEN 300
                     WHEN 'YURI HAND SOAP PARFUME /200L' THEN 301
                     WHEN 'YURI HAND SOAP STRAWBERRY /200L' THEN 302
-                    WHEN 'YURI HAND SOAP APPLE  /375ML' THEN 303
+                    WHEN 'YURI HAND SOAP APPLE /375ML' THEN 303
                     WHEN 'YURI HAND SOAP APPLE 375ML + BUY 1 GET 1' THEN 304
-                    WHEN 'YURI HAND SOAP GRAPE  /375ML' THEN 305
-                    WHEN 'YURI HAND SOAP GRAPE  375ML + BUY1GET1' THEN 306
-                    WHEN 'YURI HAND SOAP LEMON  /375ML' THEN 307
-                    WHEN 'YURI HAND SOAP LEMON  375ML +  BUY 1 GET 1' THEN 308
-                    WHEN 'YURI HAND SOAP ORANGE  /375ML' THEN 309
-                    WHEN 'YURI HAND SOAP ORANGE  375ML +  BUY 1 GET 1' THEN 310
-                    WHEN 'YURI HAND SOAP STRAW  /375ML' THEN 311
-                    WHEN 'YURI HAND SOAP STRAWBERRY  375ML +  BUY 1 GET 1' THEN 312
+                    WHEN 'YURI HAND SOAP GRAPE /375ML' THEN 305
+                    WHEN 'YURI HAND SOAP GRAPE 375ML + BUY1GET1' THEN 306
+                    WHEN 'YURI HAND SOAP LEMON /375ML' THEN 307
+                    WHEN 'YURI HAND SOAP LEMON 375ML + BUY 1 GET 1' THEN 308
+                    WHEN 'YURI HAND SOAP ORANGE /375ML' THEN 309
+                    WHEN 'YURI HAND SOAP ORANGE 375ML + BUY 1 GET 1' THEN 310
+                    WHEN 'YURI HAND SOAP STRAW /375ML' THEN 311
+                    WHEN 'YURI HAND SOAP STRAWBERRY 375ML + BUY 1 GET 1' THEN 312
                     WHEN 'YURI HAND SOAP LEMON 375ML +HANDGEL' THEN 313
                     WHEN 'YURI HANDSOAP STRAWBERRY 375ML +HANDGEL' THEN 314
                     WHEN 'YURI HAND SOAP APPLE 2S 375ML' THEN 315
@@ -935,20 +940,20 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'YURI HAND SOAP STRAWBERRY 2S 375ML' THEN 319
                     WHEN 'LIGENT BABY PUMP /450ML FREE GIFT' THEN 320
                     WHEN 'LIGENT BABY POUCH /410ML' THEN 321
-                    WHEN 'LIGENT LIME  /80ML' THEN 322
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT /80ML' THEN 323
+                    WHEN 'LIGENT LIME /80ML' THEN 322
+                    WHEN 'LIGENT BIO LIME & BERGAMOT /80ML' THEN 323
                     WHEN 'LIGENT LEMON /80ML' THEN 324
                     WHEN 'LIGENT GRAPEFRUIT /80ML' THEN 325
-                    WHEN 'LIGENT BIO LIME & BERGAMOT FLIPTOP/  1 L' THEN 326
-                    WHEN 'LIGENT BIO  LEMON & BERGAMOT  FLIPTOP/  1 L' THEN 327
-                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT  FLIPTOP/  1 L' THEN 328
+                    WHEN 'LIGENT BIO LIME & BERGAMOT FLIPTOP /1L' THEN 326
+                    WHEN 'LIGENT BIO LEMON & BERGAMOT FLIPTOP /1L' THEN 327
+                    WHEN 'LIGENT BIO GRAPEFRUIT & BERGAMOT FLIPTOP /1L' THEN 328
                     WHEN 'LIGENT BIO LIME & BERGAMOT /600ML' THEN 329
                     WHEN 'LIGENT BIO LEMON & BERGAMOT BOTTLE /600ML' THEN 330
                     WHEN 'LIGENT LIME 4S 630ML' THEN 331
                     WHEN 'LIGENT LEMON 4S 630ML' THEN 332
                     WHEN 'LIGENT GRAPEFRUIT 4S 630ML' THEN 333
                     WHEN 'LIGENT LIME PUMP 1L + GLASS CLEANER 500ML' THEN 334
-                    WHEN 'LIGENT LIME PUMP 1000ML + GLASS CLEANER  500ML SPRAY' THEN 335
+                    WHEN 'LIGENT LIME PUMP 1000ML + GLASS CLEANER 500ML SPRAY' THEN 335
                     WHEN 'LIGENT LEMON PUMP 1L' THEN 336
                     WHEN 'LIGENT LEMON PUMP 1000ML + GLASS CLEANER 500ML SPRAY LEMON FRESH' THEN 337
                     WHEN 'LIGENT GRAPEFRUIT PUMP 1L +AIRT.CONT' THEN 338
@@ -959,46 +964,46 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                     WHEN 'LIGENT LIME PUMP /1L' THEN 343
                     WHEN 'LIGENT (P)-LIME /1000ML' THEN 344
                     WHEN 'LIGENT PUMP LIME 1L + FREE GIFT' THEN 345
-                    WHEN 'LIGENT BIO (P)-LIME & BERGAMOT  / 1000ML' THEN 346
+                    WHEN 'LIGENT BIO (P)-LIME & BERGAMOT /1000ML' THEN 346
                     WHEN 'LIGENT PUMP LIME 1L + CUP COVER' THEN 347
                     WHEN 'LIGENT LEMON PUMP /1L' THEN 348
                     WHEN 'LIGENT (P)-LEMON /1000ML' THEN 349
                     WHEN 'LIGENT PUMP LEMON 1L + CUP COVER' THEN 350
                     WHEN 'LIGENT BIO (P)- LEMON & BERGAMOT /1000ML' THEN 351
-                    WHEN 'LIGENT PANDAN  /1L' THEN 352
-                    WHEN 'LIGENT LEMON  /1L' THEN 353
-                    WHEN 'LIGENT GRAPEFRUIT  /1L' THEN 354
+                    WHEN 'LIGENT PANDAN /1L' THEN 352
+                    WHEN 'LIGENT LEMON /1L' THEN 353
+                    WHEN 'LIGENT GRAPEFRUIT /1L' THEN 354
                     WHEN 'LIGENT (P)-GRAPEFRUIT /1000ML' THEN 355
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + FREE GIFT' THEN 356
                     WHEN 'LIGENT BIO (P)-GRAPEFRUIT & BERGAMOT /1000ML' THEN 357
                     WHEN 'LIGENT PUMP GRAPEFRUIT 1L + CUP COVER' THEN 358
-                    WHEN 'LIGENT LIME  /3,7LT' THEN 359
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT / 3.7L' THEN 360
-                    WHEN 'LIGENT LEMON  /3,7LT' THEN 361
+                    WHEN 'LIGENT LIME /3,7LT' THEN 359
+                    WHEN 'LIGENT BIO LIME & BERGAMOT / 3.7L' THEN 360
+                    WHEN 'LIGENT LEMON /3,7LT' THEN 361
                     WHEN 'LIGENTBIO - LEMON & BERGAMOT/ 3,7LT' THEN 362
-                    WHEN 'LIGENT GRAPEFRUIT  /3,7LT' THEN 363
+                    WHEN 'LIGENT GRAPEFRUIT /3,7LT' THEN 363
                     WHEN 'LIGENT BIO - GRAPE FRUIT & BERGAMOT /3,7LT' THEN 364
                     WHEN 'LIGENT LIME 2S 1L REFILL' THEN 365
                     WHEN 'LIGENT LEMON 2S 1L REFILL' THEN 366
                     WHEN 'LIGENT ORANGE 2S 1L REFILL' THEN 367
                     WHEN 'LIGENT GRAPE FRUIT BUNDLE /600ML FREE GIFT' THEN 368
                     WHEN 'LIGENT LIME/600ML FREE GIFT (SCAN 2X)' THEN 369
-                    WHEN 'LIGENT LEMON /600ML FREE GIFT  (SCAN 2X)' THEN 370
+                    WHEN 'LIGENT LEMON /600ML FREE GIFT (SCAN 2X)' THEN 370
                     WHEN 'LIGENT GRAPE FRUIT /600ML FREE GIFT (SCAN 2X)' THEN 371
-                    WHEN 'LIGENT LIME  1L PUMP +REFILL' THEN 372
-                    WHEN 'LIGENT LEMON  1L PUMP +REFILL' THEN 373
-                    WHEN 'LIGENT GRAPEFRUIT  1L PUMP +REFILL' THEN 374
+                    WHEN 'LIGENT LIME 1L PUMP +REFILL' THEN 372
+                    WHEN 'LIGENT LEMON 1L PUMP +REFILL' THEN 373
+                    WHEN 'LIGENT GRAPEFRUIT 1L PUMP + REFILL' THEN 374
                     WHEN 'LIGENT LIME  /20L' THEN 375
                     WHEN 'LIGENT BIO- LIME & BERGAMOT JRG/ 20LT' THEN 376
-                    WHEN 'LIGENT LEMON  /20L' THEN 377
+                    WHEN 'LIGENT LEMON /20L' THEN 377
                     WHEN 'LIGENT BIO - LEMON & BERGAMOT JRG/ 20LT' THEN 378
-                    WHEN 'LIGENT GRAPEFRUIT  /20L' THEN 379
+                    WHEN 'LIGENT GRAPEFRUIT /20L' THEN 379
                     WHEN 'LIGENT BIO - GRAPE FRUIT & BERGAMOT JRG/20LT' THEN 380
                     WHEN 'LIGENT LIME /20L' THEN 381
                     WHEN 'LIGENT LEMON /200L' THEN 382
                     WHEN 'LIGENT ORANGE /200L' THEN 383
-                    WHEN 'LIGENT LIME  /180ML' THEN 384
-                    WHEN 'LIGENT BIO  LIME & BERGAMOT /180ML' THEN 385
+                    WHEN 'LIGENT LIME /180ML' THEN 384
+                    WHEN 'LIGENT BIO LIME & BERGAMOT /180ML' THEN 385
                     WHEN 'LIGENT LEMON  /180ML' THEN 386
                     WHEN 'LIGENT BIO LEMON & BERGAMOT   /180ML' THEN 387
                     WHEN 'LIGENT GRAPEFRUIT  /180ML' THEN 388
@@ -1158,6 +1163,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
             ->get();
 
         return $items->map(function ($item) use (
+            $agentName,
             $start3Month,
             $end3Month,
             $periods,
@@ -1170,23 +1176,36 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
         ) {
             $normalizedItem = preg_replace('/\s+/', ' ', trim($item->item_name));
 
+            //     $totalOutsell3Month = AgentExportReport::query()
+
+            //         ->whereRaw("
+            //     REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
+            //     =
+            //     REGEXP_REPLACE(TRIM(?), '\s+', ' ', 'g')
+            // ", [$normalizedItem])
+
+            //         ->whereBetween('tanggal_invoice', [
+            //             $start3Month,
+            //             $end3Month
+            //         ])
+
+            //         ->sum('qty_terjual_pcs');
+
             $totalOutsell3Month = AgentExportReport::query()
-
+                ->where('user_id', $this->report->user_id)
                 ->whereRaw("
-            REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
-            =
-            REGEXP_REPLACE(TRIM(?), '\s+', ' ', 'g')
-        ", [$normalizedItem])
-
+                REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
+                =
+                REGEXP_REPLACE(TRIM(?), '\s+', ' ', 'g')
+                ", [$normalizedItem])
                 ->whereBetween('tanggal_invoice', [
                     $start3Month,
                     $end3Month
                 ])
-
                 ->sum('qty_terjual_pcs');
 
             $totalSalesQtyPcs = AgentExportReport::query()
-
+                ->where('user_id', $this->report->user_id)
                 ->whereRaw("
         REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
         =
@@ -1261,6 +1280,7 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
                 ->format('Y-m');
 
             $totalStockPcs = AgentExportStock::query()
+                ->where('agent_id', $this->report->user_id)
                 ->whereRaw("
         REGEXP_REPLACE(TRIM(item_name_jim), '\s+', ' ', 'g')
         =
@@ -1412,7 +1432,9 @@ class CMOExport implements FromCollection, WithHeadings, ShouldAutoSize, WithCol
 
                 'item_group' => $item->item_group,
 
-                'agent_name' => AgentExportReport::value('nama_agen'),
+                // 'agent_name' => AgentExportReport::value('nama_agen'),
+                'agent_name'    => $agentName,  // <-- ini yang harus diubah
+
 
                 'berat' => $item->weight,
 
