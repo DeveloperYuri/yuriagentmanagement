@@ -157,6 +157,52 @@ const toggleSettings = () => {
                     </span>
                 </Link>
 
+                <Link
+                    :href="route('dataagent.index')"
+                    :class="
+                        $page.component === 'Uploaddataagent/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <TableCellsIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium">
+                        Data Laporan Agent
+                    </span>
+                </Link>
+
+                <Link
+                    v-if="$page.props.auth.user.role === 'Administrator'"
+                    :href="route('templateyuri.index')"
+                    :class="
+                        $page.component === 'Uploadtemplateyuri/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <TableCellsIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium">
+                        Data Laporan Template Yuri
+                    </span>
+                </Link>
+
+                <Link
+                    :href="route('datacmo.index')"
+                    :class="
+                        $page.component === 'Uploaddatacmo/Index'
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'hover:bg-gray-700 hover:text-white'
+                    "
+                    class="group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200"
+                >
+                    <TableCellsIcon class="h-6 w-6 shrink-0" />
+                    <span v-show="isSidebarOpen" class="text-sm font-medium">
+                        Data laporan CMO
+                    </span>
+                </Link>
+
                 <!-- <Link
                     :href="route('agents.index')"
                     :class="
@@ -172,7 +218,7 @@ const toggleSettings = () => {
                     >
                 </Link> -->
 
-                <Link
+                <!-- <Link
                     :href="route('reports.index')"
                     :class="
                         $page.component === 'Reports/Index'
@@ -185,9 +231,9 @@ const toggleSettings = () => {
                     <span v-show="isSidebarOpen" class="text-sm font-medium"
                         >Upload Laporan Excel</span
                     >
-                </Link>
+                </Link> -->
 
-                <Link
+                <!-- <Link
                     :href="route('mappingagentreports.index')"
                     :class="
                         $page.component === 'ReportsMapping/Index'
@@ -200,7 +246,7 @@ const toggleSettings = () => {
                     <span v-show="isSidebarOpen" class="text-sm font-medium">
                         Mapping Laporan Excel
                     </span>
-                </Link>
+                </Link> -->
 
                 <!-- <Link
                     :href="route('mappingagentreports.index')"

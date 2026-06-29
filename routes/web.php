@@ -15,6 +15,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PythonController;
 use App\Http\Controllers\RegionalController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UploaddataagentControlller;
+use App\Http\Controllers\UploaddatacmoControlller;
+use App\Http\Controllers\UploadtemplateyuriControlller;
 use App\Http\Controllers\UserController;
 use App\Models\Customeritemminstocks;
 use Illuminate\Foundation\Application;
@@ -65,6 +68,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/mappingagentreports/{report}/download', [MappingreportController::class, 'download'])->name('mappingagentreports.download');
     Route::put('/mappingagentreports/{report}', [MappingreportController::class, 'update'])->name('mappingagentreports.update');
     Route::delete('/mappingagentreports/{report}', [MappingreportController::class, 'destroy'])->name('mappingagentreports.destroy');
+
+    // Upload Data Agent
+    Route::get('/dataagent', [UploaddataagentControlller::class, 'index'])->name('dataagent.index');
+    Route::post('/dataagent/store', [UploaddataagentControlller::class, 'store'])->name('dataagent.store');
+    Route::get('/dataagent/{report}/download', [UploaddataagentControlller::class, 'download'])->name('dataagent.download');
+    Route::put('/dataagent/{report}', [UploaddataagentControlller::class, 'update'])->name('dataagent.update');
+    Route::delete('/dataagent/{report}', [UploaddataagentControlller::class, 'destroy'])->name('dataagent.destroy');
+
+    // Upload Data Template Yuri
+    Route::get('/templateyuri', [UploadtemplateyuriControlller::class, 'index'])->name('templateyuri.index');
+    Route::post('/templateyuri/store', [UploadtemplateyuriControlller::class, 'store'])->name('templateyuri.store');
+    Route::get('/templateyuri/{report}/download', [UploadtemplateyuriControlller::class, 'download'])->name('templateyuri.download');
+    Route::put('/templateyuri/{report}', [UploadtemplateyuriControlller::class, 'update'])->name('templateyuri.update');
+    Route::delete('/templateyuri/{report}', [UploadtemplateyuriControlller::class, 'destroy'])->name('templateyuri.destroy');
+
+    // Upload Data CMO
+    Route::get('/datacmo', [UploaddatacmoControlller::class, 'index'])->name('datacmo.index');
+    Route::post('/datacmo/store', [UploaddatacmoControlller::class, 'store'])->name('datacmo.store');
+    Route::get('/datacmo/{report}/download', [UploaddatacmoControlller::class, 'download'])->name('datacmo.download');
+    Route::put('/datacmo/{report}', [UploaddatacmoControlller::class, 'update'])->name('datacmo.update');
+    Route::delete('/datacmo/{report}', [UploaddatacmoControlller::class, 'destroy'])->name('datacmo.destroy');
 
     // Route Management Role
     Route::resource('roles', RoleController::class);
