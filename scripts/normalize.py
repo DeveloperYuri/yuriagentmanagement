@@ -74,6 +74,8 @@ def detect_report(file_name):
         return 'LK-000065'
     elif '000153' in normalized or 'lk-000153' in normalized:
         return 'LK-000153'
+    elif '000010' in normalized or 'lk-000010' in normalized:
+        return 'LK-000010'
     return 'UNKNOWN'
 
 # ======================================================
@@ -1467,6 +1469,40 @@ EXPECTED_COLUMNS = {
         'value_selling',
         'value_buying',
         'value_average_cost',
+    ],
+    
+    'LK-000010': [
+        'agent_name',
+
+        'customer_code',
+        'customer_name',
+        'customer_address',
+        'customer_phone',
+
+        'invoice_no',
+        'invoice_date',
+
+        'customer_type',
+        'city',
+
+        'item_code',
+        'item_name',
+
+        'qty',
+
+        'discount1_pct',
+        'discount2_pct',
+        'discount3_pct',
+        'discount4_pct',
+        'discount5_pct',
+
+        'discount6',
+
+        'bonus_qty',
+
+        'invoice_value',
+
+        'salesperson_name',
     ],
     
 }

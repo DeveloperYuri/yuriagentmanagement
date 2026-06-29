@@ -437,6 +437,12 @@ def run():
                             kode_agent
                         )
                     )
+                    
+                    # if kode_agent == "Y1701":
+                    #     print("================================")
+                    #     print("SKU:", repr(kode_agent))
+                    #     print("MAPPED:", repr(mapped_item_code))
+                    #     print("IN LOOKUP:", kode_agent in mapping_lookup)
 
                     if mapped_item_code:
 
@@ -1286,7 +1292,8 @@ def run():
                         "Item Name",
                         "Item Box"
                     ],
-                    as_index=False
+                    as_index=False,
+                    sort=False
                 )
                 .agg({
                     "Stock PCS": "sum"

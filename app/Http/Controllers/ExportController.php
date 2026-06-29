@@ -452,6 +452,8 @@ class ExportController extends Controller
                     'item_name_jim' =>
                     $row['Item Name']
                         ?? null,
+                    'user_id' =>
+                    $request->agent_id,
                 ]);
             }
 

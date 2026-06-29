@@ -165,7 +165,7 @@ const doSearch = () => {
                     v-model="search"
                     @input="doSearch"
                     type="text"
-                    placeholder="Search item name..."
+                    placeholder="Search item code..."
                     class="w-full border rounded-md px-3 py-2 text-sm"
                 />
             </div>

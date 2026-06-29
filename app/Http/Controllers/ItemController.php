@@ -17,7 +17,7 @@ class ItemController extends Controller
         $query = Item::query();
 
         if ($request->filled('search')) {
-            $query->where('item_name', 'ilike', '%' . $request->search . '%');
+            $query->where('item_code', 'ilike', '%' . $request->search . '%');
         }
 
         $items = $query

@@ -19,7 +19,8 @@ class AgentExportStock extends Model
         'bulan',
         'tahun',
         'periode',
-        'agent_id'
+        'agent_id',
+        'user_id'
     ];
 
     public function agent()
